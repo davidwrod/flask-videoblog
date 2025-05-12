@@ -31,6 +31,7 @@
                 <span class="group-hover:text-blue-400 transition duration-200">{{ video.user.username }}</span>
             </a>
             <span class="mx-3">•</span>
+            <span><i class="far fa-eye mr-1"></i> {{ video.views }} visualizações</span>
             <span><i class="far fa-calendar-alt mr-1"></i> {% if video.uploaded_at %}{{ video.uploaded_at.strftime('%d/%m/%Y') }}{% else %}Data não disponível{% endif %}</span>
 
         </div>
@@ -43,10 +44,18 @@
         <!-- Botões de interação -->
         <div class="flex justify-between items-center mb-8">
             <div class="flex space-x-6">
-                <button class="engagement-btn flex items-center text-gray-300 hover:text-red-500">
-                    <i class="far fa-heart text-xl mr-2"></i>
-                    <span>Curtir</span>
+                <button id="like-btn" class="engagement-btn flex items-center text-gray-300 hover:text-red-500">
+                <i class="far fa-heart text-xl mr-2"></i>
+                <span id="like-text">
+                {% if current_user.is_authenticated and current_user in video.likes %}
+                    Curtido
+                {% else %}
+                    Curtir
+                {% endif %}
+                </span>
+                <span id="like-count" class="ml-2 text-sm text-gray-400">({{ video.likes|length }})</span>
                 </button>
+
                 <button class="engagement-btn flex items-center text-gray-300 hover:text-blue-500">
                     <i class="far fa-comment text-xl mr-2"></i>
                     <span>Comentar</span>
@@ -152,6 +161,25 @@
                 ]
             });
         });
+
+        document.getElementById('like-btn').addEventListener('click', () => {
+    fetch('{{ url_for("main.like_video", video_id=video.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'liked') {
+            document.getElementById('like-text').innerText = 'Curtido';
+        } else {
+            document.getElementById('like-text').innerText = 'Curtir';
+        }
+        document.getElementById('like-count').innerText = `(${data.likes})`;
+    });
+});
+
     </script>
 
 {% endblock %}

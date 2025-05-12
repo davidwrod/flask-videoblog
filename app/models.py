@@ -14,6 +14,12 @@ video_models = db.Table('video_models',
     db.Column('model_id', db.Integer, db.ForeignKey('models.id'), primary_key=True)
 )
 
+video_likes = db.Table('video_likes',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('video_id', db.Integer, db.ForeignKey('videos.id'), primary_key=True)
+)
+
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
@@ -53,6 +59,9 @@ class Video(db.Model):
     duration = db.Column(db.Float)
     width = db.Column(db.Integer)
     height = db.Column(db.Integer)
+    views = db.Column(db.Integer, default=0)
+    likes = db.relationship('User', secondary=video_likes, backref='liked_videos')
+
 
 class Tag(db.Model):
     __tablename__ = 'tags'

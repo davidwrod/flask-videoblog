@@ -103,7 +103,7 @@
 
 /* Informações do vídeo abaixo do thumbnail */
 .video-info {
-    padding: 0.75rem;
+    padding: 0.33em;
     background-color: #111;
     flex-grow: 1;
     display: flex;

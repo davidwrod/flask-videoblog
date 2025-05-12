@@ -85,6 +85,8 @@ def delete_video(video_id):
 @main.route('/video/<int:video_id>')
 def video_view(video_id):
     video = Video.query.get_or_404(video_id)
+    video.views += 1
+    db.session.commit()
     return render_template('video_view.html', video=video)
 
 @main.route('/<username>')
@@ -136,6 +138,21 @@ def tag_videos(tag_name):
 def modelos():
     modelos = Model.query.filter(Model.name != "Sem Nome").order_by(Model.name.asc()).all()
     return render_template('modelos.html', modelos=modelos)
+
+@main.route('/video/<int:video_id>/like', methods=['POST'])
+@login_required
+def like_video(video_id):
+    video = Video.query.get_or_404(video_id)
+
+    if current_user in video.likes:
+        video.likes.remove(current_user)
+        db.session.commit()
+        return jsonify({'status': 'unliked', 'likes': len(video.likes)})
+    else:
+        video.likes.append(current_user)
+        db.session.commit()
+        return jsonify({'status': 'liked', 'likes': len(video.likes)})
+
 
 @main.route('/top-rated')
 def top_rated():
