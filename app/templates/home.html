@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% from 'video_component.html' import video_thumbnail %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {% if videos %}
+    <div class="video-grid">
+        {% for video in videos %}
+            {{ video_thumbnail(video) }}
+        {% endfor %}
+    </div>
+    
+    {% if pagination.pages > 1 %}
+    <div class="mt-8 flex justify-center space-x-2">
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('main.home', page=pagination.prev_num) }}"
+               class="px-3 py-1 bg-gray-800 text-white rounded hover:bg-red-600">
+               &laquo; Anterior
+            </a>
+        {% endif %}
+
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if p %}
+                {% if p == pagination.page %}
+                    <span class="px-3 py-1 bg-red-600 text-white rounded">{{ p }}</span>
+                {% else %}
+                    <a href="{{ url_for('main.home', page=p) }}"
+                       class="px-3 py-1 bg-gray-800 text-white rounded hover:bg-red-600">{{ p }}</a>
+                {% endif %}
+            {% else %}
+                <span class="px-3 py-1 text-gray-500">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a href="{{ url_for('main.home', page=pagination.next_num) }}"
+               class="px-3 py-1 bg-gray-800 text-white rounded hover:bg-red-600">
+               Próximo &raquo;
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+
+    {% else %}
+    <div class="bg-black border-2 border-red-600 p-8 rounded-lg text-center">
+        <p class="text-xl text-red-400 font-bold">Nenhum vídeo disponível no momento.</p>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.upload_form') }}" class="mt-4 inline-block bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded-md transform hover:scale-105 transition-transform">
+            Seja o primeiro a enviar um vídeo
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.login') }}" class="mt-4 inline-block bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded-md transform hover:scale-105 transition-transform">
+            Faça login para enviar vídeos
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+<!-- Footer -->
+<footer class="bg-black border-t border-gray-800 py-8 mt-12">
+    <div class="container mx-auto px-4">
+        <div class="text-center text-gray-400 text-sm">
+            <p>&copy; 2025 MeuBlog. Todos os direitos reservados.</p>
+            <div class="mt-2">
+                <a href="#" class="text-gray-400 hover:text-red-500 mx-2">Termos de Uso</a>
+                <a href="#" class="text-gray-400 hover:text-red-500 mx-2">Política de Privacidade</a>
+                <a href="#" class="text-gray-400 hover:text-red-500 mx-2">Contato</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+{% endblock content %}

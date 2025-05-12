@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% from 'video_component.html' import video_thumbnail %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-white">
+    {% if videos %}
+    <div class="video-grid">
+        {% for video in videos %}
+            {{ video_thumbnail(video) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Restante do conteúdo (modelos/tags/paginação) permanece igual -->
+    {% if modelos %}
+    <h2 class="text-xl font-semibold mb-3 px-2 mt-6">Modelos</h2>
+    <div class="flex flex-wrap gap-3 mb-8 px-2">
+        {% for modelo in modelos %}
+        <a href="{{ url_for('modelos.perfil_modelo', name=modelo.name) }}" class="text-red-400 hover:underline">
+            {{ modelo.name }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if tags %}
+    <h2 class="text-xl font-semibold mb-3 px-2 mt-6">Tags</h2>
+    <div class="flex flex-wrap gap-3 px-2">
+        {% for tag in tags %}
+        <a href="{{ url_for('main.tag_videos', tag_name=tag.name) }}" class="text-blue-400 hover:underline">
+            #{{ tag.name }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not videos and not modelos and not tags %}
+    <p class="text-gray-400 px-2">Nenhum resultado encontrado.</p>
+    {% endif %}
+</div>
+
+{% if pagination.pages > 1 %}
+<div class="flex justify-center mt-4 mb-8 space-x-2">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('main.search', q=termo, page=pagination.prev_num) }}"
+       class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-white text-sm">Anterior</a>
+    {% endif %}
+
+    {% for p in range(1, pagination.pages + 1) %}
+    <a href="{{ url_for('main.search', q=termo, page=p) }}"
+       class="px-3 py-1 rounded text-sm {% if p == pagination.page %}bg-red-600 text-white{% else %}bg-gray-800 text-gray-300 hover:bg-gray-700{% endif %}">
+        {{ p }}
+    </a>
+    {% endfor %}
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('main.search', q=termo, page=pagination.next_num) }}"
+       class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-white text-sm">Próxima</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

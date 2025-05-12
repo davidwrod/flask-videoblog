@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciar Tags</title>
+</head>
+<body>
+    <h1>Gerenciar Tags</h1>
+
+    <!-- Formulário para adicionar nova tag -->
+    <form method="POST" action="{{ url_for('admin.manage_tags') }}">
+        <label for="name">Nova tag:</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Criar</button>
+    </form>
+
+    <hr>
+
+    <!-- Lista de tags existentes com opção de exclusão -->
+    <h2>Tags existentes</h2>
+    <ul>
+        {% for tag in tags %}
+            <li>
+                {{ tag.name }}
+                <form method="POST" action="{{ url_for('admin.delete_tag', tag_id=tag.id) }}" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta tag?')">Excluir</button>
+                </form>
+            </li>
+        {% else %}
+            <p>Nenhuma tag cadastrada ainda.</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>

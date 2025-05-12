@@ -1,0 +1,136 @@
+/* video-thumbnails.css - Estilos padronizados para thumbnails de vídeo */
+
+/* Container principal do grid de vídeos - layout responsivo */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+}
+
+/* Responsividade para diferentes tamanhos de tela */
+@media (max-width: 1280px) {
+    .video-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1024px) {
+    .video-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .video-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .video-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+
+/* Cartão de vídeo - container para thumbnail e info */
+.video-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #111;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(75, 75, 75, 0.2);
+    transition: all 0.3s ease;
+}
+
+.video-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    border-color: rgba(225, 55, 55, 0.3);
+}
+
+/* Container do thumbnail com proporção 16:9 */
+.video-thumbnail {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* Proporção 16:9 */
+    overflow: hidden;
+    background-color: #000;
+}
+
+/* Imagem do thumbnail */
+.video-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.video-card:hover .video-thumbnail img {
+    transform: scale(1.05);
+}
+
+/* Placeholder para vídeos sem thumbnail */
+.video-thumbnail-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #111;
+}
+
+/* Duração do vídeo - badge no canto inferior direito */
+.video-duration {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+/* Informações do vídeo abaixo do thumbnail */
+.video-info {
+    padding: 0.75rem;
+    background-color: #111;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Título do vídeo */
+.video-title {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 2.6rem;
+}
+
+/* Metadados adicionais do vídeo (visualizações, tempo, etc) */
+.video-meta {
+    display: flex;
+    align-items: center;
+    color: #aaa;
+    font-size: 0.75rem;
+    margin-top: auto;
+}

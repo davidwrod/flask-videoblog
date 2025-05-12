@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% from 'video_component.html' import video_thumbnail %}
+
+{% block content %}
+<div class="w-full max-w-screen-2xl mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold mb-6">Tag: #{{ tag.name }}</h1>
+
+    {% if videos.items %}
+    <div class="video-grid">
+        {% for video in videos.items %}
+            {{ video_thumbnail(video) }}
+        {% endfor %}
+    </div>
+
+    <!-- Paginação igual à da home -->
+    {% if videos.pages > 1 %}
+    <div class="mt-8 flex justify-center space-x-2">
+        {% if videos.has_prev %}
+            <a href="{{ url_for('main.tag_videos', tag_name=tag.name, page=videos.prev_num) }}"
+               class="px-3 py-1 bg-gray-800 text-white rounded hover:bg-red-600">
+               &laquo; Anterior
+            </a>
+        {% endif %}
+
+        {% for p in videos.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if p %}
+                {% if p == videos.page %}
+                    <span class="px-3 py-1 bg-red-600 text-white rounded">{{ p }}</span>
+                {% else %}
+                    <a href="{{ url_for('main.tag_videos', tag_name=tag.name, page=p) }}"
+                       class="px-3 py-1 bg-gray-800 text-white rounded hover:bg-red-600">{{ p }}</a>
+                {% endif %}
+            {% else %}
+                <span class="px-3 py-1 text-gray-500">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if videos.has_next %}
+            <a href="{{ url_for('main.tag_videos', tag_name=tag.name, page=videos.next_num) }}"
+               class="px-3 py-1 bg-gray-800 text-white rounded hover:bg-red-600">
+               Próximo &raquo;
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <p class="text-gray-400">Nenhum vídeo com esta tag.</p>
+    {% endif %}
+</div>
+{% endblock %}

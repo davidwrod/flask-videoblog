@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 1024px) {
+        .video-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .video-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    
+    .video-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%; /* Garante que o card ocupe todo o espaço */
+    }
+    
+    .video-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .video-thumbnail {
+        position: relative;
+        padding-top: 56.25%; /* Mantém o aspect ratio 16:9 */
+        flex-shrink: 0; /* Impede que a thumbnail diminua */
+    }
+    
+    .video-info {
+        flex-grow: 1; /* Ocupa o espaço restante */
+        padding: 0.75rem;
+        background: #000; /* Fundo preto para contrastar */
+    }
+    
+    .video-title {
+        color: #ffffff;
+        font-weight: 500; /* Mais leve que o bold */
+        margin-bottom: 0.25rem;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 0.95rem;
+    }
+    
+    .video-meta {
+        color: #aaa;
+        font-size: 0.75rem;
+    }
+    
+    .profile-header {
+        background-color: #000;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .action-buttons {
+        padding: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+    }
+</style>
+
+<div class="profile-header">
+    <h1 class="text-3xl font-medium text-white">{{ user.username }}</h1> <!-- font-medium ao invés de bold -->
+    <div class="flex justify-between items-center mt-2 text-gray-300">
+        <p>Membro desde: <span class="text-white">{{ user.created_at.strftime('%d/%m/%Y') }}</span></p>
+        <p>Total de vídeos: <span class="text-white">{{ videos|length }}</span></p>
+    </div>
+</div>
+
+<div class="container mx-auto px-4">
+    <h2 class="text-xl font-medium mb-6 text-white pb-2">Vídeos</h2> <!-- font-medium e text-white -->
+    
+    {% if videos %}
+    <div class="video-grid">
+        {% for video in videos %}
+        <div class="video-card">
+    <a href="{{ url_for('main.video_view', video_id=video.id) }}">
+        <!-- THUMBNAIL (100% do espaço superior) -->
+        <div class="video-thumbnail">
+            {% if video.thumbnail %}
+                <img src="{{ url_for('static', filename='thumbnails/' + video.thumbnail) }}" 
+                     class="absolute top-0 left-0 w-full h-full object-cover">
+                    {% else %}
+                    <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title">{{ video.title }}</h3>
+                    <div class="video-meta">
+                        <span>{{ video.uploaded_at.strftime('%d/%m/%Y') }}</span>
+                        {% if video.duration %}
+                        <span> • {{ "%d:%02d"|format(video.duration//60, video.duration%60) }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            
+            {% if current_user.is_authenticated and current_user.id == video.user_id %}
+            <div class="action-buttons flex justify-end space-x-3 px-2 py-1">
+                <button class="text-xs text-gray-400 hover:text-white edit-btn" data-id="{{ video.id }}">
+                    Editar
+                </button>
+                <form method="POST" action="{{ url_for('main.delete_video', video_id=video.id) }}" class="inline">
+                    <button type="submit" class="text-xs text-gray-400 hover:text-white" 
+                            onclick="return confirm('Tem certeza que deseja deletar este vídeo?');">
+                        Deletar
+                    </button>
+                </form>
+            </div>
+            
+            <form class="edit-form px-2 pb-2 hidden" data-id="{{ video.id }}">
+                <input type="text" name="new_title" value="{{ video.title }}" 
+                       class="w-full px-2 py-1 bg-gray-900 rounded text-sm text-white mb-1">
+                <div class="flex justify-end space-x-2">
+                    <button type="button" class="text-xs text-gray-400 cancel-btn">Cancelar</button>
+                    <button type="submit" class="text-xs bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-600">Salvar</button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-10">
+        <p class="text-gray-400">Nenhum vídeo encontrado.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const videoId = this.dataset.id;
+            const card = this.closest('.video-card');
+            card.querySelector('.video-info').classList.add('hidden');
+            card.querySelector('.action-buttons').classList.add('hidden');
+            card.querySelector('.edit-form').classList.remove('hidden');
+        });
+    });
+    
+    document.querySelectorAll('.cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const form = this.closest('.edit-form');
+            form.classList.add('hidden');
+            form.closest('.video-card').querySelector('.video-info').classList.remove('hidden');
+            form.closest('.video-card').querySelector('.action-buttons').classList.remove('hidden');
+        });
+    });
+    
+    document.querySelectorAll('.edit-form').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const videoId = this.dataset.id;
+            const newTitle = this.querySelector('input[name="new_title"]').value.trim();
+            
+            if (!newTitle) {
+                alert('O título não pode estar vazio');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/edit_video_title/${videoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ new_title: newTitle })
+                });
+                
+                if (response.ok) {
+                    const card = this.closest('.video-card');
+                    card.querySelector('.video-title').textContent = newTitle;
+                    card.querySelector('.video-info').classList.remove('hidden');
+                    card.querySelector('.action-buttons').classList.remove('hidden');
+                    this.classList.add('hidden');
+                } else {
+                    throw new Error('Falha ao atualizar');
+                }
+            } catch (error) {
+                alert('Erro ao atualizar o título');
+                console.error(error);
+            }
+        });
+    });
+</script>
+
+{% endblock %}

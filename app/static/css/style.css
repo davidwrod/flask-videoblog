@@ -1,0 +1,103 @@
+nav {
+    background-color: #0a0a0a;
+    padding: 10px;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin-right: 20px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+    color: #fa0202;
+    text-decoration: underline;
+}
+
+
+/* Estilos para o grid de vídeos na homepage */
+.aspect-video {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.aspect-video img,
+.aspect-video div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Animação suave para todos os elementos interativos */
+a, button, .video-card {
+    transition: all 0.2s ease-in-out;
+}
+
+
+/* Adicionando estilos mais agressivos */
+body {
+    background-color: #0a0a0a;
+    color: #f1f1f1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #f70303;
+    font-weight: bold;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Estilo de bordas mais agressivo */
+.border-red-accent {
+    border: 2px solid #b91c1c;
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+}
+
+/* Estilos para botões */
+button, .btn {
+    background-color: #b91c1c;
+    color: white;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+button:hover, .btn:hover {
+    background-color: #fc0303;
+    transform: scale(1.05);
+}
+
+/* Efeito hover mais intenso para links */
+a:hover {
+    color: #fa0202;
+    text-decoration: underline;
+}

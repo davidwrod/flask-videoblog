@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% from 'video_component.html' import video_thumbnail %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-white">Vídeos Mais Recentes</h1>
+    
+    {% if videos %}
+    <div class="video-grid">
+        {% for video in videos %}
+            {{ video_thumbnail(video) }}
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <div class="bg-gray-800 p-8 rounded-lg text-center">
+        <p class="text-xl text-gray-400">Nenhum vídeo disponível no momento.</p>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.upload_form') }}" class="mt-4 inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md">
+            Seja o primeiro a enviar um vídeo
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.login') }}" class="mt-4 inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md">
+            Faça login para enviar vídeos
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-900 border-t border-gray-800 py-8 mt-12">
+    <div class="container mx-auto px-4">
+        <div class="text-center text-gray-400 text-sm">
+            <p>&copy; 2025 MeuBlog. Todos os direitos reservados.</p>
+            <div class="mt-2">
+                <a href="#" class="text-gray-400 hover:text-red-500 mx-2">Termos de Uso</a>
+                <a href="#" class="text-gray-400 hover:text-red-500 mx-2">Política de Privacidade</a>
+                <a href="#" class="text-gray-400 hover:text-red-500 mx-2">Contato</a>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock content %}
