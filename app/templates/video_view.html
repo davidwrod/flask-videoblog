@@ -3,17 +3,76 @@
 {% block content %}
 <title>{{ video.title }}</title>
     
-<!-- Tailwind CSS e Plyr -->
+<!-- Tailwind CSS e Video.js -->
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-<script src="https://cdn.plyr.io/3.7.8/plyr.min.js"></script>
+<link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet" />
+<script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
 
 <style>
-    .plyr {
-        max-width: 1536px; /* Aumentado em ~20% do padrão 1280px */
+    /* Container com tamanho absolutamente fixo como YouTube/Vimeo */
+    .video-container {
+        width: 100%;
+        max-width: 1280px;
+        height: 720px; /* Fixo na proporção 16:9 em 720p */
         margin: 0 auto;
         border-radius: 0.75rem;
+        overflow: hidden;
         box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+        background-color: #000;
+        position: relative;
+    }
+    
+    /* Garantir que o player preencha 100% do container */
+    .video-js {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 0.75rem;
+    }
+    
+    .video-js .vjs-big-play-button {
+        background-color: rgba(200, 30, 30, 0.7);
+        border-color: #fff;
+        border-radius: 50%;
+        height: 80px;
+        width: 80px;
+        line-height: 80px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .video-js:hover .vjs-big-play-button {
+        background-color: rgba(220, 30, 30, 0.9);
+    }
+    
+    .video-js .vjs-control-bar {
+        background-color: rgba(30, 30, 30, 0.7);
+    }
+    
+    .video-js .vjs-play-progress {
+        background-color: #c10000;
+    }
+    
+    /* Responsividade para telas menores - mantendo proporção */
+    @media (max-width: 1280px) {
+        .video-container {
+            height: 0;
+            padding-bottom: 56.25%; /* Manter proporção 16:9 */
+            height: auto;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .video-container {
+            border-radius: 0.5rem;
+        }
+        
+        .video-js {
+            border-radius: 0.5rem;
+        }
     }
 </style>
 
@@ -33,13 +92,24 @@
             <span class="mx-3">•</span>
             <span><i class="far fa-eye mr-1"></i> {{ video.views }} visualizações</span>
             <span><i class="far fa-calendar-alt mr-1"></i> {% if video.uploaded_at %}{{ video.uploaded_at.strftime('%d/%m/%Y') }}{% else %}Data não disponível{% endif %}</span>
-
         </div>
         
-        <video id="player" class="plyr" controls>
-            <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4" />
-            Seu navegador não suporta o player de vídeo.
-        </video>
+        <!-- Player de vídeo Video.js com dimensões absolutamente fixas -->
+        <div class="video-container mb-6">
+            <video 
+                id="my-video" 
+                class="video-js vjs-big-play-centered" 
+                controls 
+                preload="auto" 
+                data-setup="{}"
+            >
+                <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4" />
+                <p class="vjs-no-js">
+                    Para ver este vídeo, ative o JavaScript e considere atualizar para um
+                    navegador que suporte vídeo HTML5
+                </p>
+            </video>
+        </div>
         
         <!-- Botões de interação -->
         <div class="flex justify-between items-center mb-8">
@@ -154,32 +224,53 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            new Plyr('#player', {
-                controls: [
-                    'play-large', 'play', 'progress', 'current-time', 'mute', 
-                    'volume', 'settings', 'fullscreen'
-                ]
+            // Inicializar Video.js com dimensões fixas
+            var player = videojs('my-video', {
+                responsive: false,
+                fluid: false,
+                controlBar: {
+                    children: [
+                        'playToggle',
+                        'volumePanel',
+                        'currentTimeDisplay',
+                        'timeDivider',
+                        'durationDisplay',
+                        'progressControl',
+                        'playbackRateMenuButton',
+                        'fullscreenToggle'
+                    ]
+                }
+            });
+            
+            // Garantir que o vídeo seja cortado/redimensionado para preencher o container
+            player.fill(true);
+            
+            // Registrar visualização quando o vídeo é iniciado
+            player.on('play', function() {
+                if(!this.hasStarted_) {
+                    this.hasStarted_ = true;
+                    // Aqui você pode adicionar código para registrar visualização se desejar
+                }
             });
         });
 
         document.getElementById('like-btn').addEventListener('click', () => {
-    fetch('{{ url_for("main.like_video", video_id=video.id) }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'liked') {
-            document.getElementById('like-text').innerText = 'Curtido';
-        } else {
-            document.getElementById('like-text').innerText = 'Curtir';
-        }
-        document.getElementById('like-count').innerText = `(${data.likes})`;
-    });
-});
-
+            fetch('{{ url_for("main.like_video", video_id=video.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'liked') {
+                    document.getElementById('like-text').innerText = 'Curtido';
+                } else {
+                    document.getElementById('like-text').innerText = 'Curtir';
+                }
+                document.getElementById('like-count').innerText = `(${data.likes})`;
+            });
+        });
     </script>
 
 {% endblock %}
