@@ -200,6 +200,14 @@ def upload_form():
 
     return render_template('upload_form.html', models=models, tags=serialized_tags, current_user = current_user)
 
+def verificar_extensao_arquivo(arquivo):
+    EXTENSOES_PERMITIDAS = {'mp4', 'webm', 'mkv', 'mov', 'avi'}
+    if '.' in arquivo.filename:
+        extensao = arquivo.filename.rsplit('.', 1)[1].lower()
+        if extensao in EXTENSOES_PERMITIDAS:
+            return True
+    return False
+
 @main.route('/upload/process', methods=['POST'])
 @login_required
 def upload_video():
@@ -237,6 +245,10 @@ def upload_video():
 
     videos_uploaded = 0
     for idx, file in enumerate(files):
+        if not verificar_extensao_arquivo(file):
+            flash(f'O arquivo "{file.filename}" tem uma extensão inválida.', 'error')
+            return redirect(url_for('main.upload_form'))
+
         filename = secure_filename(file.filename)
         filepath = os.path.join(current_app.root_path, 'static', 'uploads', filename)
         file.save(filepath)

@@ -88,8 +88,15 @@
             <!-- Upload dos vídeos -->
             <div id="drop-zone" class="relative border-2 border-dashed border-gray-500 rounded p-6 text-center cursor-pointer hover:border-red-500 transition">
                 <p class="text-gray-400">Arraste e solte os arquivos aqui ou clique para selecionar</p>
-                <input type="file" name="videos" id="videos" multiple required
-                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                <input 
+                type="file" 
+                name="videos" 
+                id="videos" 
+                accept="video/*" 
+                multiple 
+                required
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                >
             </div>
 
             <!-- Lista de arquivos com botão remover -->
@@ -309,6 +316,18 @@
         fileInput.dispatchEvent(event);
     });    
 
+    document.getElementById('videos').addEventListener('change', (event) => {
+    const arquivos = Array.from(event.target.files);
+    const tiposValidos = ['video/mp4', 'video/webm', 'video/x-matroska', 'video/quicktime', 'video/x-msvideo'];
+
+    for (const arquivo of arquivos) {
+        if (!tiposValidos.includes(arquivo.type)) {
+            alert(`Arquivo inválido: ${arquivo.name}`);
+            event.target.value = ''; // Limpa seleção
+            break;
+        }
+    }
+});
     </script>
 </body>
 
