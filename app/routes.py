@@ -156,30 +156,15 @@ def like_video(video_id):
 
 @main.route('/top-rated')
 def top_rated():
+    #videos = Video.query.order_by(Video.likes.desc()).limit(50).all()
+    #return render_template('top-rated.html', videos=videos)
     pass
-    """
-    # Buscar vídeos mais curtidos
-    from sqlalchemy import func, desc
-    
-    videos = Video.query.join(video_likes).group_by(Video.id)\
-        .order_by(func.count(video_likes.c.user_id).desc())\
-        .limit(50).all()
-    
-    return render_template('top_rated.html', videos=videos)
-    """
+
 @main.route('/top-view')
 def top_view():
-    pass
-    """
-    # Buscar vídeos mais visualizados
-    from sqlalchemy import func, desc
-    
-    videos = Video.query.join(VideoView).group_by(Video.id)\
-        .order_by(func.count(VideoView.id).desc())\
-        .limit(50).all()
-    
-    return render_template('top_view.html', videos=videos)
-    """
+    videos = Video.query.order_by(Video.views.desc()).limit(50).all()
+    return render_template('top-view.html', videos=videos)
+
 @main.route('/recentes')
 def recentes():
     # Buscar vídeos mais recentes (últimos 50)
