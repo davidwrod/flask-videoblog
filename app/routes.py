@@ -143,22 +143,27 @@ def modelos():
 @login_required
 def like_video(video_id):
     video = Video.query.get_or_404(video_id)
+    action = None
 
     if current_user in video.likes:
         video.likes.remove(current_user)
-        db.session.commit()
-        return jsonify({'status': 'unliked', 'likes': len(video.likes)})
+        video.like_count -= 1
+        action = 'unliked'
     else:
         video.likes.append(current_user)
-        db.session.commit()
-        return jsonify({'status': 'liked', 'likes': len(video.likes)})
-
+        video.like_count += 1
+        action = 'liked'
+    
+    db.session.commit()
+    return jsonify({
+        'status': action,
+        'likes': video.like_count  # Agora usa o campo otimizado
+    })
 
 @main.route('/top-rated')
 def top_rated():
-    #videos = Video.query.order_by(Video.likes.desc()).limit(50).all()
-    #return render_template('top-rated.html', videos=videos)
-    pass
+    videos = Video.query.order_by(Video.like_count.desc()).limit(50).all()
+    return render_template('top-rated.html', videos=videos)
 
 @main.route('/top-view')
 def top_view():

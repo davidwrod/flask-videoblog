@@ -16,7 +16,8 @@ video_models = db.Table('video_models',
 
 video_likes = db.Table('video_likes',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    db.Column('video_id', db.Integer, db.ForeignKey('videos.id'), primary_key=True)
+    db.Column('video_id', db.Integer, db.ForeignKey('videos.id'), primary_key=True),
+    db.Column('liked_at', db.DateTime, default=datetime.utcnow)
 )
 
 
@@ -61,7 +62,7 @@ class Video(db.Model):
     height = db.Column(db.Integer)
     views = db.Column(db.Integer, default=0)
     likes = db.relationship('User', secondary=video_likes, backref='liked_videos')
-
+    like_count = db.Column(db.Integer, default=0)
 
 class Tag(db.Model):
     __tablename__ = 'tags'
