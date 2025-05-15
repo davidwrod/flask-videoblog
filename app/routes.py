@@ -2,7 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, Blueprint,
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 from . import db
-from .models import User, Video, Model, Tag
+from .models import User, Video, Model, Tag, video_models
 from .forms import CadastroForm, LoginForm
 from sqlalchemy.exc import IntegrityError
 from flask_login import login_required, current_user
@@ -48,7 +48,7 @@ def search():
 def edit_video_title(video_id):
     video = Video.query.get_or_404(video_id)
 
-    if video.user_id != current_user.id:
+    if video.user_id != current_user.id and current_user.role != 'admin':
         return jsonify({'error': 'Sem permissão'}), 403
 
     data = request.get_json()
@@ -67,16 +67,40 @@ def edit_video_title(video_id):
 def delete_video(video_id):
     video = Video.query.get_or_404(video_id)
 
-    if video.user_id != current_user.id:
+    # Verifica permissão
+    if video.user_id != current_user.id and current_user.role != 'admin':
         flash("Você não tem permissão para deletar este vídeo.", "error")
         return redirect(url_for('main.home'))
 
-# remover arquivo físico se estiver local
-    filepath = os.path.join(current_app.root_path, 'static', 'uploads', video.filename)
-    if os.path.exists(filepath):
-        os.remove(filepath)
+    # Captura os modelos associados ANTES de deletar o vídeo
+    associated_models = list(video.models)  # Faz uma cópia da lista
 
+    # Remove arquivo físico (se aplicável)
+    if video.filename:
+        filepath = os.path.join(current_app.root_path, 'static', 'uploads', video.filename)
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+            except Exception as e:
+                flash(f"Erro ao remover arquivo: {str(e)}", "warning")
+
+    # Deleta o vídeo
     db.session.delete(video)
+    db.session.commit()
+
+    # Verifica modelos órfãos
+    for model in associated_models:
+        # Verifica se a modelo ainda tem vídeos associados
+        has_remaining_videos = db.session.query(
+            db.session.query(Video)
+            .join(video_models)
+            .filter(video_models.c.model_id == model.id)
+            .exists()
+        ).scalar()
+
+        if not has_remaining_videos:
+            db.session.delete(model)
+    
     db.session.commit()
 
     flash("Vídeo deletado com sucesso.", "success")

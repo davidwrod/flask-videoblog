@@ -11,7 +11,7 @@
     
     <form method="POST" action="{{ url_for('admin.unificar_modelos') }}">
     <div class="mb-4">
-        <label for="modelo_origem" class="block mb-2 text-sm font-medium">Modelo duplicada (será removida):</label>
+        <label for="modelo_origem" class="block mb-2 text-sm font-medium">Modelo duplicada (será mantida):</label>
         <select name="modelo_origem" id="modelo_origem" class="w-full p-2 rounded bg-gray-700 text-white">
             {% for modelo in modelos %}
                 <option value="{{ modelo.id }}">{{ modelo.name }}</option>
@@ -20,7 +20,7 @@
     </div>
 
     <div class="mb-4">
-        <label for="modelo_destino" class="block mb-2 text-sm font-medium">Modelo principal (será mantida):</label>
+        <label for="modelo_destino" class="block mb-2 text-sm font-medium">Modelo principal (será removida):</label>
         <select name="modelo_destino" id="modelo_destino" class="w-full p-2 rounded bg-gray-700 text-white">
             {% for modelo in modelos %}
                 <option value="{{ modelo.id }}">{{ modelo.name }}</option>

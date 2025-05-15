@@ -23,6 +23,8 @@ __pycache__/
 # Logs e arquivos temporários
 *.log
 *.tmp
+create_admin.py
+
 
 # Configurações locais
 *.swp

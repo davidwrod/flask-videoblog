@@ -5,10 +5,10 @@ from .models import db, Tag, Model
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 @admin.route('/tags', methods=['GET', 'POST'])
-#@login_required  # Protege a rota
+@login_required
 def manage_tags():
-#    if current_user.role != 'admin':
-#        return "Acesso negado. Apenas administradores."
+    if current_user.role != 'admin':
+        return "Acesso negado. Apenas administradores."
 
     if request.method == 'POST':
         tag_name = request.form.get('name', '').strip()
@@ -21,16 +21,25 @@ def manage_tags():
     tags = Tag.query.order_by(Tag.name).all()
     return render_template('admin/manage_tags.html', tags=tags)
 
+@login_required
 @admin.route('/delete_tag/<int:tag_id>', methods=['POST'])
 def delete_tag(tag_id):
+    if current_user.role != 'admin':
+        return "Acesso negado. Apenas administradores."
+
     tag = Tag.query.get_or_404(tag_id)
     db.session.delete(tag)
     db.session.commit()
     flash(f"Tag '{tag.name}' excluída com sucesso.", 'success')
     return redirect(url_for('admin.manage_tags'))
 
+@login_required
 @admin.route('/unificar-modelos', methods=['GET', 'POST'])
 def unificar_modelos():
+
+    if current_user.role != 'admin':
+        return "Acesso negado. Apenas administradores."
+
     modelos = Model.query.order_by(Model.name).all()
 
     if request.method == 'POST':

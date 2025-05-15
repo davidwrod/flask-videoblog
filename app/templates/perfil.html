@@ -1,63 +1,7 @@
 {% extends 'base.html' %}
+{% from 'video_component.html' import video_thumbnail %}
 {% block content %}
-
 <style>
-    .video-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 1.5rem;
-    }
-    
-    @media (max-width: 1024px) {
-        .video-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-    }
-    
-    @media (max-width: 640px) {
-        .video-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-    
-    .video-card {
-        display: flex;
-        flex-direction: column;
-        height: 100%; /* Garante que o card ocupe todo o espaço */
-    }
-    
-    .video-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-    
-    .video-thumbnail {
-        position: relative;
-        padding-top: 56.25%; /* Mantém o aspect ratio 16:9 */
-        flex-shrink: 0; /* Impede que a thumbnail diminua */
-    }
-    
-    .video-info {
-        flex-grow: 1; /* Ocupa o espaço restante */
-        padding: 0.75rem;
-        background: #000; /* Fundo preto para contrastar */
-    }
-    
-    .video-title {
-        color: #ffffff;
-        font-weight: 500; /* Mais leve que o bold */
-        margin-bottom: 0.25rem;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        font-size: 0.95rem;
-    }
-    
-    .video-meta {
-        color: #aaa;
-        font-size: 0.75rem;
-    }
-    
     .profile-header {
         background-color: #000;
         padding: 1.5rem;
@@ -65,8 +9,8 @@
     }
     
     .action-buttons {
-        padding: 0.5rem;
-        background: rgba(255, 255, 255, 0.05);
+        padding: 0.3rem;
+        background: #292a2d;
     }
 </style>
 
@@ -110,7 +54,7 @@
                 </div>
             </a>
             
-            {% if current_user.is_authenticated and current_user.id == video.user_id %}
+            {% if current_user.is_authenticated and current_user.id == video.user_id or current_user.role == 'admin'%}
             <div class="action-buttons flex justify-end space-x-3 px-2 py-1">
                 <button class="text-xs text-gray-400 hover:text-white edit-btn" data-id="{{ video.id }}">
                     Editar
@@ -142,61 +86,7 @@
     {% endif %}
 </div>
 
-<script>
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const videoId = this.dataset.id;
-            const card = this.closest('.video-card');
-            card.querySelector('.video-info').classList.add('hidden');
-            card.querySelector('.action-buttons').classList.add('hidden');
-            card.querySelector('.edit-form').classList.remove('hidden');
-        });
-    });
-    
-    document.querySelectorAll('.cancel-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const form = this.closest('.edit-form');
-            form.classList.add('hidden');
-            form.closest('.video-card').querySelector('.video-info').classList.remove('hidden');
-            form.closest('.video-card').querySelector('.action-buttons').classList.remove('hidden');
-        });
-    });
-    
-    document.querySelectorAll('.edit-form').forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const videoId = this.dataset.id;
-            const newTitle = this.querySelector('input[name="new_title"]').value.trim();
-            
-            if (!newTitle) {
-                alert('O título não pode estar vazio');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/edit_video_title/${videoId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ new_title: newTitle })
-                });
-                
-                if (response.ok) {
-                    const card = this.closest('.video-card');
-                    card.querySelector('.video-title').textContent = newTitle;
-                    card.querySelector('.video-info').classList.remove('hidden');
-                    card.querySelector('.action-buttons').classList.remove('hidden');
-                    this.classList.add('hidden');
-                } else {
-                    throw new Error('Falha ao atualizar');
-                }
-            } catch (error) {
-                alert('Erro ao atualizar o título');
-                console.error(error);
-            }
-        });
-    });
-</script>
+<script src="{{ url_for('static', filename='js/video_edit.js') }}"></script>
+
 
 {% endblock %}

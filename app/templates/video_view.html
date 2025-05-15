@@ -155,7 +155,7 @@
                 <h2 class="text-lg font-semibold text-gray-200 mb-3">Tags:</h2>
                 <div class="tag-container flex overflow-x-auto pb-2 space-x-2">
                     {% for tag in video.tags %}
-                        <a href="{{ url_for('main.tags', tag_name=tag.name) }}" class="px-3 py-1.5 bg-gradient-to-r from-red-700 to-red-800 rounded-full text-sm hover:from-red-700 hover:to-red-900 transition duration-300 whitespace-nowrap">
+                        <a href="{{ url_for('main.tag_videos', tag_name=tag.name) }}" class="px-3 py-1.5 bg-gradient-to-r from-red-700 to-red-800 rounded-full text-sm hover:from-red-700 hover:to-red-900 transition duration-300 whitespace-nowrap">
                             #{{ tag.name }}
                         </a>
                     {% else %}
