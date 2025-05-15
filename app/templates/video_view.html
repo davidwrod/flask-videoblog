@@ -2,81 +2,20 @@
 
 {% block content %}
 <title>{{ video.title }}</title>
-    
-<!-- Tailwind CSS e Video.js -->
+
+<!-- Tailwind e Video.js -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet" />
 <script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
 
-<style>
-    /* Container com proporção 16:9 para o player de vídeo - estilo site exemplo */
-    .video-container {
-        width: 100%;
-        max-width: 100%; /* Ocupa a largura do container principal */
-        position: relative;
-        padding-bottom: 56.25%; /* Proporção 16:9 */
-        margin: 0 auto;
-        border-radius: 0; /* Sem bordas arredondadas */
-        overflow: hidden;
-        background-color: #000;
-        height: 0; /* Importante para manter proporção */
-        box-shadow: none; /* Remove sombra */
-    }
-    
-    /* Garantir que o player preencha 100% do container */
-    .video-js {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100% !important;
-        height: 100% !important;
-        border-radius: 0; /* Sem bordas arredondadas */
-    }
-    
-    .video-js .vjs-big-play-button {
-        background-color: rgba(200, 30, 30, 0.7);
-        border-color: #fff;
-        border-radius: 50%;
-        height: 80px;
-        width: 80px;
-        line-height: 80px;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-    
-    .video-js:hover .vjs-big-play-button {
-        background-color: rgba(220, 30, 30, 0.9);
-    }
-    
-    .video-js .vjs-control-bar {
-        background-color: rgba(30, 30, 30, 0.7);
-    }
-    
-    .video-js .vjs-play-progress {
-        background-color: #c10000;
-    }
-    
-    /* Responsividade para telas menores */
-    @media (max-width: 768px) {
-        .video-container {
-            /* Mantém sem borda em dispositivos móveis */
-            border-radius: 0;
-        }
-        
-        .video-js {
-            border-radius: 0;
-        }
-    }
-</style>
+<!-- Estilos específicos -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/video_player.css') }}">
 
-<body class="bg-gray-900 text-white min-h-screen py-0 px-0"> <!-- Layout sem espaçamento como no exemplo -->
-    <div class="max-w-screen-xl mx-auto"> <!-- Largura semelhante ao exemplo, limitada mas ampla -->
-        
-        <!-- Título do vídeo com espaçamento menor -->
+<body class="bg-gray-900 text-white min-h-screen py-0 px-0">
+    <div class="max-w-screen-xl mx-auto">
         <h1 class="text-2xl font-bold text-white mb-1 px-4 pt-2">{{ video.title }}</h1>
-        
-        <div class="flex items-center mb-2 text-sm text-gray-400 px-4"><!-- Adicionado padding lateral -->
+
+        <div class="flex items-center mb-2 text-sm text-gray-400 px-4">
             <a href="{{ url_for('main.perfil_publico', username=video.user.username) }}" class="flex items-center group">
                 <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-2 group-hover:bg-blue-600 transition duration-200">
                     <i class="fas fa-user"></i>
@@ -87,9 +26,8 @@
             <span><i class="far fa-eye mr-1"></i> {{ video.views }} visualizações</span>
             <span><i class="far fa-calendar-alt mr-1"></i> {% if video.uploaded_at %}{{ video.uploaded_at.strftime('%d/%m/%Y') }}{% else %}Data não disponível{% endif %}</span>
         </div>
-        
-        <!-- Player de vídeo Video.js com proporção 16:9 - estilo exemplo -->
-        <div class="video-container mb-4"><!-- Reduzido o margin-bottom -->
+
+        <div class="video-container mb-4">
             <video 
                 id="my-video" 
                 class="video-js vjs-big-play-centered" 
@@ -104,20 +42,19 @@
                 </p>
             </video>
         </div>
-        
-        <!-- Botões de interação -->
-        <div class="flex justify-between items-center mb-4 px-4"><!-- Adicionado padding lateral -->
+
+        <div class="flex justify-between items-center mb-4 px-4">
             <div class="flex space-x-6">
                 <button id="like-btn" class="engagement-btn flex items-center text-gray-300 hover:text-red-500">
-                <i class="far fa-heart text-xl mr-2"></i>
-                <span id="like-text">
-                {% if current_user.is_authenticated and current_user in video.likes %}
-                    Curtido
-                {% else %}
-                    Curtir
-                {% endif %}
-                </span>
-                <span id="like-count" class="ml-2 text-sm text-gray-400">({{ video.likes|length }})</span>
+                    <i class="far fa-heart text-xl mr-2"></i>
+                    <span id="like-text">
+                        {% if current_user.is_authenticated and current_user in video.likes %}
+                            Curtido
+                        {% else %}
+                            Curtir
+                        {% endif %}
+                    </span>
+                    <span id="like-count" class="ml-2 text-sm text-gray-400">({{ video.likes|length }})</span>
                 </button>
 
                 <button class="engagement-btn flex items-center text-gray-300 hover:text-blue-500">
@@ -129,43 +66,39 @@
                     <span>Compartilhar</span>
                 </button>
             </div>
-        </div>        
-        <!-- Modelo e Tags -->
-        <div class="gradient-bg p-4 rounded-none mb-4 mx-4"><!-- Sem arredondamento, menor padding, adicionado margin lateral -->
-    <!-- Modelos -->
-    <div class="mb-6">
-        <h2 class="text-lg font-semibold text-gray-200 mb-3">Modelos:</h2>
-        {% if video.models %}
-            <div class="flex flex-wrap gap-2">
-                {% for modelo in video.models %}
-                    <a href="{{ url_for('modelos.perfil_modelo', name=modelo.name) }}" 
-                       class="inline-block px-4 py-2 bg-gradient-to-r from-red-700 to-red-900 rounded-lg text-white hover:from-red-600 hover:to-red-800 transition duration-300">
-                        <i class="fas fa-film mr-2"></i>{{ modelo.name }}
-                    </a>
-                {% endfor %}
-            </div>
-        {% else %}
-            <span class="text-gray-500">Modelo não especificado</span>
-        {% endif %}
-    </div>
-</div>
-            
-            <!-- Tags -->
-            <div>
-                <h2 class="text-lg font-semibold text-gray-200 mb-3">Tags:</h2>
-                <div class="tag-container flex overflow-x-auto pb-2 space-x-2">
-                    {% for tag in video.tags %}
-                        <a href="{{ url_for('main.tag_videos', tag_name=tag.name) }}" class="px-3 py-1.5 bg-gradient-to-r from-red-700 to-red-800 rounded-full text-sm hover:from-red-700 hover:to-red-900 transition duration-300 whitespace-nowrap">
-                            #{{ tag.name }}
-                        </a>
-                    {% else %}
-                        <span class="text-gray-500">Sem tags</span>
-                    {% endfor %}
-                </div>
+        </div>
+
+        <div class="gradient-bg p-4 rounded-none mb-4 mx-4">
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold text-gray-200 mb-3">Modelos:</h2>
+                {% if video.models %}
+                    <div class="flex flex-wrap gap-2">
+                        {% for modelo in video.models %}
+                            <a href="{{ url_for('modelos.perfil_modelo', name=modelo.name) }}" 
+                               class="inline-block px-4 py-2 bg-gradient-to-r from-red-700 to-red-900 rounded-lg text-white hover:from-red-600 hover:to-red-800 transition duration-300">
+                                <i class="fas fa-film mr-2"></i>{{ modelo.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <span class="text-gray-500">Modelo não especificado</span>
+                {% endif %}
             </div>
         </div>
-        
-        <!-- Descrição do vídeo -->
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-200 mb-3 px-4">Tags:</h2>
+            <div class="tag-container flex overflow-x-auto pb-2 space-x-2 px-4">
+                {% for tag in video.tags %}
+                    <a href="{{ url_for('main.tag_videos', tag_name=tag.name) }}" class="px-3 py-1.5 bg-gradient-to-r from-red-700 to-red-800 rounded-full text-sm hover:from-red-700 hover:to-red-900 transition duration-300 whitespace-nowrap">
+                        #{{ tag.name }}
+                    </a>
+                {% else %}
+                    <span class="text-gray-500">Sem tags</span>
+                {% endfor %}
+            </div>
+        </div>
+
         <div class="gradient-bg p-6 rounded-xl mb-10">
             <h2 class="text-xl font-semibold mb-4">Descrição</h2>
             <div class="text-gray-300">
@@ -176,8 +109,7 @@
                 {% endif %}
             </div>
         </div>
-        
-        <!-- Seção de comentários (placeholder) -->
+
         <div class="gradient-bg p-6 rounded-xl mb-10">
             <h2 class="text-xl font-semibold mb-4">Comentários</h2>
             <div class="mb-6">
@@ -193,12 +125,10 @@
                 <p>Seja o primeiro a comentar neste vídeo</p>
             </div>
         </div>
-        
-        <!-- Vídeos relacionados (placeholder) -->
+
         <div class="mb-10">
             <h2 class="text-xl font-semibold mb-6">Vídeos relacionados</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Placeholder para vídeos relacionados -->
                 {% for i in range(3) %}
                 <div class="gradient-bg rounded-lg overflow-hidden hover:shadow-lg transition duration-300">
                     <div class="aspect-video bg-gray-800"></div>
@@ -211,59 +141,14 @@
             </div>
         </div>
     </div>
-    
+
     <footer class="text-center text-gray-500 py-6">
         <p>© 2025 Meu Blog de Vídeos</p>
     </footer>
 
+    <!-- Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Inicializar Video.js mantendo a proporção correta
-            var player = videojs('my-video', {
-                aspectRatio: '16:9',
-                fluid: false,         // Manter tamanho fixo como no exemplo
-                fill: true,           // Preencher o container
-                controls: true,       // Manter controles visíveis
-                controlBar: {
-                    children: [
-                        'playToggle',
-                        'volumePanel',
-                        'currentTimeDisplay',
-                        'timeDivider',
-                        'durationDisplay',
-                        'progressControl',
-                        'playbackRateMenuButton',
-                        'fullscreenToggle'
-                    ]
-                }
-            });
-            
-            // Registrar visualização quando o vídeo é iniciado
-            player.on('play', function() {
-                if(!this.hasStarted_) {
-                    this.hasStarted_ = true;
-                    // Aqui você pode adicionar código para registrar visualização se desejar
-                }
-            });
-        });
-
-        document.getElementById('like-btn').addEventListener('click', () => {
-            fetch('{{ url_for("main.like_video", video_id=video.id) }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'liked') {
-                    document.getElementById('like-text').innerText = 'Curtido';
-                } else {
-                    document.getElementById('like-text').innerText = 'Curtir';
-                }
-                document.getElementById('like-count').innerText = `(${data.likes})`;
-            });
-        });
+        const likeUrl = "{{ url_for('main.like_video', video_id=video.id) }}";
     </script>
-
+    <script src="{{ url_for('static', filename='js/video_player.js') }}"></script>
 {% endblock %}

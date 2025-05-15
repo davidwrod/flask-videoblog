@@ -50,6 +50,8 @@
                         {% if video.duration %}
                         <span> • {{ "%d:%02d"|format(video.duration//60, video.duration%60) }}</span>
                         {% endif %}
+                        <span><i class="far fa-eye mr-1"></i> ({{ video.views }}) Visualizações</span>
+                        <span id="like-count" class="ml-2 text-sm text-gray-400">Likes({{ video.likes|length }})</span>
                     </div>
                 </div>
             </a>
