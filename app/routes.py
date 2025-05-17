@@ -222,85 +222,137 @@ def verificar_extensao_arquivo(arquivo):
             return True
     return False
 
+def calculate_file_hash(filepath):
+    BUF_SIZE = 65536
+    sha256 = hashlib.sha256()
+    with open(filepath, 'rb') as f:
+        while True:
+            data = f.read(BUF_SIZE)
+            if not data:
+                break
+            sha256.update(data)
+    return sha256.hexdigest()
+
+def generate_thumbnail(video_path, video_filename, duration):
+    base_name = os.path.splitext(video_filename)[0]
+    thumbnail_filename = f"{base_name}_{uuid.uuid4().hex[:8]}.jpg"
+    thumbnails_dir = os.path.join(current_app.root_path, 'static', 'thumbnails')
+    if not os.path.exists(thumbnails_dir):
+        os.makedirs(thumbnails_dir)
+    thumbnail_path = os.path.join(thumbnails_dir, thumbnail_filename)
+    try:
+        if duration > 0:
+            time_position = duration * 0.3
+        else:
+            time_position = 1.0
+        subprocess.run([
+            'ffmpeg', '-ss', str(time_position), '-i', video_path,
+            '-vframes', '1', '-q:v', '2', '-vf', 'scale=320:-1', thumbnail_path
+        ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return thumbnail_filename
+    except Exception as e:
+        current_app.logger.error(f"Erro ao gerar thumbnail para {video_filename}: {str(e)}")
+        return None
+
+def compress_video_if_needed(filepath, width, height):
+    original_size_mb = os.path.getsize(filepath) / (1024 * 1024)
+    # Pega bitrate médio diretamente do ffprobe
+    try:
+        probe = ffmpeg.probe(filepath)
+        format_info = probe.get('format', {})
+        bit_rate = int(format_info.get('bit_rate', 0))
+    except Exception as e:
+        current_app.logger.error(f"Erro ao obter bitrate para compressão: {str(e)}")
+        bit_rate = 0
+
+    resolution = max(width, height)
+    # Limites em bits por segundo (bps)
+    if resolution <= 480:
+        limit_bps = 2 * 1024 * 1024  # 2 Mbps
+        crf = "27"
+    elif resolution <= 720:
+        limit_bps = 4 * 1024 * 1024  # 4 Mbps
+        crf = "24"
+    elif resolution <= 1080:
+        limit_bps = 8 * 1024 * 1024  # 8 Mbps
+        crf = "23"
+    else:
+        limit_bps = float('inf')
+        crf = "21"
+
+    # Se bitrate maior que limite, ou resolução > 1080p, comprimir
+    if bit_rate > limit_bps or resolution > 1080:
+        tmp_dir = os.path.join(current_app.root_path, 'tmp')
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+        temp_path = os.path.join(tmp_dir, f"{uuid.uuid4().hex[:12]}.mp4")
+        cmd = [
+            "ffmpeg", "-i", filepath,
+            "-c:v", "libx264", "-preset", "slow", "-crf", crf,
+            "-c:a", "aac", "-b:a", "128k",
+            "-y", temp_path
+        ]
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if os.path.exists(temp_path):
+            os.replace(temp_path, filepath)
+
+
 @main.route('/upload/process', methods=['POST'])
 @login_required
 def upload_video():
     files = request.files.getlist('videos')
-    model_names = request.form.getlist('models[]')  # Lista de modelos selecionadas/criadas
-
+    model_names = request.form.getlist('models[]')
     if not files:
         flash("Faltam vídeos para upload.", "error")
         return redirect(url_for('main.upload_form'))
-
-    # Se não veio nenhuma modelo, adiciona "Sem Nome"
     if not model_names:
         model_names = ["Sem Nome"]
-
-    # Remover duplicatas preservando a ordem
     unique_model_names = []
     for name in model_names:
         name = name.strip()
         if name and name not in unique_model_names:
             unique_model_names.append(name)
-
-    # Verificar ou criar os modelos
     models = []
     for name in unique_model_names:
-        # Procurar a modelo no banco de dados
         model = Model.query.filter_by(name=name).first()
         if not model:
-            # Criar nova modelo se não existir
             model = Model(name=name)
             db.session.add(model)
-            db.session.flush()  # Não faz commit ainda
+            db.session.flush()
         models.append(model)
-
-    db.session.commit()  # Confirma criação de modelos (se houver)
+    db.session.commit()
 
     videos_uploaded = 0
     for idx, file in enumerate(files):
         if not verificar_extensao_arquivo(file):
             flash(f'O arquivo "{file.filename}" tem uma extensão inválida.', 'error')
             return redirect(url_for('main.upload_form'))
-
         filename = secure_filename(file.filename)
         filepath = os.path.join(current_app.root_path, 'static', 'uploads', filename)
         file.save(filepath)
-
-        # Extrair metadados do vídeo
-        file_hash = calculate_file_hash(filepath)
-        size = os.path.getsize(filepath)  # Tamanho em bytes
-        
-        # Gerar thumbnail do vídeo
-        thumbnail_filename = generate_thumbnail(filepath, filename)
-        
         try:
-            # Usar ffmpeg para extrair propriedades do vídeo
             probe = ffmpeg.probe(filepath)
-            video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+            video_stream = next((s for s in probe['streams'] if s['codec_type'] == 'video'), None)
             if video_stream:
-                # Extrair duração, largura e altura
                 duration = float(video_stream.get('duration', 0))
                 width = int(video_stream.get('width', 0))
                 height = int(video_stream.get('height', 0))
-            if not video_stream:
-                # Se não encontrar stream de vídeo
-                duration = 0
-                width = 0
-                height = 0
+            else:
+                duration = width = height = 0
         except Exception as e:
-            # Em caso de falha ao processar o vídeo, definir valores padrão
             current_app.logger.error(f"Erro ao processar vídeo {filename}: {str(e)}")
-            duration = 0
-            width = 0
-            height = 0
+            duration = width = height = 0
 
-        # Título por índice
+        # Agora só passa largura e altura para compressão
+        compress_video_if_needed(filepath, width, height)
+
+        file_hash = calculate_file_hash(filepath)
+        size = os.path.getsize(filepath)
+        thumbnail_filename = generate_thumbnail(filepath, filename, duration)  # Passa duração para miniatura
+
         title = request.form.get(f'title_{idx}', filename)
-
-        # Cria o vídeo e associa modelos (Muitos-para-Muitos)
         video = Video(
-            title=title, 
+            title=title,
             filename=filename,
             thumbnail=thumbnail_filename,
             user_id=current_user.id,
@@ -310,12 +362,10 @@ def upload_video():
             width=width,
             height=height
         )
-        
-        video.models.extend(models)  # Associa múltiplos modelos ao vídeo
+        video.models.extend(models)
         db.session.add(video)
-        db.session.flush()  # Permite associar tags logo após
+        db.session.flush()
 
-        # Coleta tags do vídeo atual
         video_tags = []
         for key in request.form.keys():
             if key.startswith(f'tags_{idx}_'):
@@ -326,76 +376,17 @@ def upload_video():
                         video_tags.append(tag)
                 except ValueError:
                     continue
-
         for tag in video_tags:
             video.tags.append(tag)
-        
         videos_uploaded += 1
 
     db.session.commit()
-    
     if videos_uploaded == 1:
         flash("1 vídeo foi enviado com sucesso!", "success")
     if videos_uploaded > 1:
         flash(f"{videos_uploaded} vídeos foram enviados com sucesso!", "success")
-        
     return redirect(url_for('main.perfil_publico', username=current_user.username))
 
-def calculate_file_hash(filepath):
-    """Calcula o hash SHA-256 de um arquivo"""
-    BUF_SIZE = 65536  # Ler em chunks de 64kb
-    sha256 = hashlib.sha256()
-    
-    with open(filepath, 'rb') as f:
-        while True:
-            data = f.read(BUF_SIZE)
-            if not data:
-                break
-            sha256.update(data)
-    
-    return sha256.hexdigest()
-
-def generate_thumbnail(video_path, video_filename):
-    """Gera uma thumbnail para o vídeo e retorna o nome do arquivo"""
-    # Criar um nome único para a thumbnail
-    base_name = os.path.splitext(video_filename)[0]
-    thumbnail_filename = f"{base_name}_{uuid.uuid4().hex[:8]}.jpg"
-    
-    # Caminho para salvar a thumbnail
-    thumbnails_dir = os.path.join(current_app.root_path, 'static', 'thumbnails')
-    
-    # Criar o diretório de thumbnails se não existir
-    if not os.path.exists(thumbnails_dir):
-        os.makedirs(thumbnails_dir)
-    
-    thumbnail_path = os.path.join(thumbnails_dir, thumbnail_filename)
-    
-    try:
-        # Extrair o frame do meio do vídeo (cerca de 30% da duração)
-        probe = ffmpeg.probe(video_path)
-        video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
-        
-        if video_stream and 'duration' in video_stream:
-            duration = float(video_stream['duration'])
-            time_position = duration * 0.3  # 30% do vídeo
-        else:
-            time_position = 1.0  # Se não conseguir ler a duração, usa 1 segundo
-        
-        # Usar o comando ffmpeg para extrair o frame e salvar como thumbnail
-        subprocess.run([
-            'ffmpeg', 
-            '-ss', str(time_position),  # Tempo de início
-            '-i', video_path,  # Arquivo de entrada
-            '-vframes', '1',  # Extrair apenas 1 frame
-            '-q:v', '2',  # Qualidade (2 é alta, sendo 1 o máximo)
-            '-vf', 'scale=320:-1',  # Redimensionar para 320px de largura, altura proporcional
-            thumbnail_path  # Caminho de saída
-        ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-        return thumbnail_filename
-    except Exception as e:
-        current_app.logger.error(f"Erro ao gerar thumbnail para {video_filename}: {str(e)}")
-        return None  # Retorna None em caso de erro
 
 @main.route('/autocomplete_modelos')
 def autocomplete_modelos():
