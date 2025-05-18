@@ -47,8 +47,8 @@
             <a href="{{ url_for('main.perfil_publico', username=current_user.username) }}" class="mr-4 hover:underline text-white-500">Meu Perfil</a>
             <a href="{{ url_for('auth.logout') }}" class="bg-red-700 hover:bg-red-800 px-3 py-1 rounded font-bold">Sair</a>
         {% else %}
-            <a href="{{ url_for('main.login') }}" class="mr-2 hover:underline text-red-400">Login</a>
-            <a href="{{ url_for('main.cadastro') }}" class="bg-red-700 hover:bg-red-800 px-3 py-1 rounded font-bold">Cadastro</a>
+            <a href="{{ url_for('auth.login') }}" class="mr-2 hover:underline text-red-400">Login</a>
+            <a href="{{ url_for('auth.cadastro') }}" class="bg-red-700 hover:bg-red-800 px-3 py-1 rounded font-bold">Cadastro</a>
         {% endif %}
     </div>
   </div>

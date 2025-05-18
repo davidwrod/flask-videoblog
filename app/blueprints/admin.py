@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from .models import db, Tag, Model
+from ..models import db, Tag, Model
 
-admin = Blueprint('admin', __name__, url_prefix='/admin')
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-@admin.route('/tags', methods=['GET', 'POST'])
+@admin_bp.route('/tags', methods=['GET', 'POST'])
 @login_required
 def manage_tags():
     if current_user.role != 'admin':
@@ -22,7 +22,7 @@ def manage_tags():
     return render_template('admin/manage_tags.html', tags=tags)
 
 @login_required
-@admin.route('/delete_tag/<int:tag_id>', methods=['POST'])
+@admin_bp.route('/delete_tag/<int:tag_id>', methods=['POST'])
 def delete_tag(tag_id):
     if current_user.role != 'admin':
         return "Acesso negado. Apenas administradores."
@@ -34,7 +34,7 @@ def delete_tag(tag_id):
     return redirect(url_for('admin.manage_tags'))
 
 @login_required
-@admin.route('/unificar-modelos', methods=['GET', 'POST'])
+@admin_bp.route('/unificar-modelos', methods=['GET', 'POST'])
 def unificar_modelos():
 
     if current_user.role != 'admin':

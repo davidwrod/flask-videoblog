@@ -16,7 +16,7 @@
     <h2 class="text-xl font-semibold mb-3 px-2 mt-6">Modelos</h2>
     <div class="flex flex-wrap gap-3 mb-8 px-2">
         {% for modelo in modelos %}
-        <a href="{{ url_for('modelos.perfil_modelo', name=modelo.name) }}" class="text-red-400 hover:underline">
+        <a href="{{ url_for('main.perfil_modelo', name=modelo.name) }}" class="text-red-400 hover:underline">
             {{ modelo.name }}
         </a>
         {% endfor %}

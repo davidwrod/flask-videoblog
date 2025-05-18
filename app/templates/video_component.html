@@ -1,6 +1,6 @@
 {% macro video_thumbnail(video) %}
 <div class="video-card">
-    <a href="{{ url_for('main.video_view', video_id=video.id) }}" class="block h-full">
+    <a href="{{ url_for('video.video_view', video_id=video.id) }}" class="block h-full">
         <div class="video-thumbnail">
             {% if video.thumbnail %}
             <img src="{{ url_for('static', filename='thumbnails/' + video.thumbnail) }}"

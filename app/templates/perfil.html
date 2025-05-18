@@ -12,35 +12,66 @@
         padding: 0.3rem;
         background: #292a2d;
     }
+
+    /* Estilos para a paginação */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+        gap: 0.5rem;
+    }
+    .page-item {
+        margin: 0 0.25rem;
+    }
+    .page-link {
+        display: block;
+        padding: 0.5rem 1rem;
+        background-color: #292a2d;
+        color: #fff;
+        border-radius: 0.25rem;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+    .page-link:hover {
+        background-color: #3d3f43;
+    }
+    .page-link.active {
+        background-color: #ef4444;
+        color: white;
+    }
+    .page-link.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
 </style>
 
 <div class="profile-header">
-    <h1 class="text-3xl font-medium text-white">{{ user.username }}</h1> <!-- font-medium ao invés de bold -->
+    <h1 class="text-3xl font-medium text-white">{{ user.username }}</h1>
     <div class="flex justify-between items-center mt-2 text-gray-300">
         <p>Membro desde: <span class="text-white">{{ user.created_at.strftime('%d/%m/%Y') }}</span></p>
-        <p>Total de vídeos: <span class="text-white">{{ videos|length }}</span></p>
+        <p>Total de vídeos: <span class="text-white">{{ pagination.total if pagination else videos|length }}</span></p>
     </div>
 </div>
 
 <div class="container mx-auto px-4">
-    <h2 class="text-xl font-medium mb-6 text-white pb-2">Vídeos</h2> <!-- font-medium e text-white -->
+    <h2 class="text-xl font-medium mb-6 text-white pb-2">Vídeos</h2>
     
     {% if videos %}
     <div class="video-grid">
         {% for video in videos %}
         <div class="video-card">
-    <a href="{{ url_for('main.video_view', video_id=video.id) }}">
-        <!-- THUMBNAIL (100% do espaço superior) -->
-        <div class="video-thumbnail">
-            {% if video.thumbnail %}
-                <img src="{{ url_for('static', filename='thumbnails/' + video.thumbnail) }}" 
-                     class="absolute top-0 left-0 w-full h-full object-cover">
+            <a href="{{ url_for('video.video_view', video_id=video.id) }}">
+                <!-- THUMBNAIL -->
+                <div class="video-thumbnail">
+                    {% if video.thumbnail %}
+                        <img src="{{ url_for('static', filename='thumbnails/' + video.thumbnail) }}" 
+                             class="absolute top-0 left-0 w-full h-full object-cover">
                     {% else %}
-                    <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                    </div>
+                        <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                        </div>
                     {% endif %}
                 </div>
                 <div class="video-info">
@@ -81,6 +112,44 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- Paginação -->
+    {% if pagination and pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('main.perfil_publico', username=user.username, page=pagination.prev_num) }}" class="page-link">
+                &laquo; Anterior
+            </a>
+        {% else %}
+            <span class="page-link disabled">&laquo; Anterior</span>
+        {% endif %}
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == pagination.page %}
+                    <a href="{{ url_for('main.perfil_publico', username=user.username, page=page_num) }}" class="page-link active">
+                        {{ page_num }}
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('main.perfil_publico', username=user.username, page=page_num) }}" class="page-link">
+                        {{ page_num }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <span class="page-link">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a href="{{ url_for('main.perfil_publico', username=user.username, page=pagination.next_num) }}" class="page-link">
+                Próxima &raquo;
+            </a>
+        {% else %}
+            <span class="page-link disabled">Próxima &raquo;</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
     {% else %}
     <div class="text-center py-10">
         <p class="text-gray-400">Nenhum vídeo encontrado.</p>
@@ -89,6 +158,4 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/video_edit.js') }}"></script>
-
-
 {% endblock %}

@@ -3,8 +3,6 @@
 {% block content %}
 <title>{{ video.title }}</title>
 
-<!-- Tailwind e Video.js -->
-<script src="https://cdn.tailwindcss.com"></script>
 <link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet" />
 <script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
 
@@ -74,7 +72,7 @@
                 {% if video.models %}
                     <div class="flex flex-wrap gap-2">
                         {% for modelo in video.models %}
-                            <a href="{{ url_for('modelos.perfil_modelo', name=modelo.name) }}" 
+                            <a href="{{ url_for('main.perfil_modelo', name=modelo.name) }}" 
                                class="inline-block px-4 py-2 bg-gradient-to-r from-red-700 to-red-900 rounded-lg text-white hover:from-red-600 hover:to-red-800 transition duration-300">
                                 <i class="fas fa-film mr-2"></i>{{ modelo.name }}
                             </a>
@@ -148,7 +146,7 @@
 
     <!-- Scripts -->
     <script>
-        const likeUrl = "{{ url_for('main.like_video', video_id=video.id) }}";
+        const likeUrl = "{{ url_for('video.like_video', video_id=video.id) }}";
     </script>
     <script src="{{ url_for('static', filename='js/video_player.js') }}"></script>
 {% endblock %}
