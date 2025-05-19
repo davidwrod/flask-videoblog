@@ -159,9 +159,12 @@
 <div id="suggestModelModal" data-video-id="{{ video.id }}" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
   <div class="bg-gray-800 p-6 rounded-xl shadow-xl max-w-sm w-full text-white">
     <h3 class="text-lg font-semibold mb-4">Sugerir nome da modelo</h3>
-    <input type="text" id="modelInput" placeholder="Digite o nome da modelo"
-           class="w-full p-2 rounded bg-gray-700 text-white mb-4 border border-gray-600">
-    <div class="flex justify-end gap-2">
+    <div class="relative">
+      <input type="text" id="modelInput" placeholder="Digite o nome da modelo"
+             class="w-full p-2 rounded bg-gray-700 text-white mb-1 border border-gray-600" autocomplete="off">
+      <ul id="autocompleteList" class="absolute z-50 bg-gray-700 w-full rounded mt-1 hidden border border-gray-600 max-h-48 overflow-y-auto"></ul>
+    </div>
+    <div class="flex justify-end gap-2 mt-3">
       <button onclick="closeSuggestModelModal()" class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-500">Cancelar</button>
       <button onclick="submitModelSuggestion()" class="px-4 py-2 bg-red-700 rounded hover:bg-red-600">Enviar</button>
     </div>
@@ -173,6 +176,44 @@
     <script>
         const likeUrl = "{{ url_for('video.like_video', video_id=video.id) }}";
     </script>
+<script type="module">
+  const input = document.getElementById("modelInput");
+  const list = document.getElementById("autocompleteList");
+
+  input.addEventListener("input", async () => {
+    const query = input.value.trim();
+    list.innerHTML = "";
+    list.classList.add("hidden");
+
+    if (query.length === 0) return;
+
+    const res = await fetch(`/autocomplete_modelos?q=${encodeURIComponent(query)}`);
+    const nomes = await res.json();
+
+    if (nomes.length > 0) {
+      nomes.forEach(nome => {
+        const li = document.createElement("li");
+        li.textContent = nome;
+        li.className = "px-3 py-2 cursor-pointer hover:bg-gray-600";
+        li.addEventListener("click", () => {
+          input.value = nome;
+          list.innerHTML = "";
+          list.classList.add("hidden");
+        });
+        list.appendChild(li);
+      });
+      list.classList.remove("hidden");
+    }
+  });
+
+  // Esconde a lista ao clicar fora
+  document.addEventListener("click", (e) => {
+    if (!input.contains(e.target) && !list.contains(e.target)) {
+      list.innerHTML = "";
+      list.classList.add("hidden");
+    }
+  });
+</script>
     <script src="{{ url_for('static', filename='js/video_player.js') }}"></script>
     <script src="{{ url_for('static', filename='js/video_edit.js') }}"></script>
 {% endblock %}
