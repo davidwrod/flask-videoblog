@@ -54,3 +54,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+function openSuggestModelModal() {
+    document.getElementById('suggestModelModal').classList.remove('hidden');
+    document.getElementById('suggestionStatus').innerText = '';
+    document.getElementById('modelInput').value = '';
+  }
+
+  function closeSuggestModelModal() {
+    document.getElementById('suggestModelModal').classList.add('hidden');
+  }
+
+  async function submitModelSuggestion() {
+  const model = document.getElementById('modelInput').value.trim();
+  if (!model) return;
+
+  const modalEl = document.getElementById('suggestModelModal');
+  const videoId = modalEl.dataset.videoId;  // pega do atributo data-video-id
+
+  if (!videoId) {
+    console.error("Video ID não encontrado no modal.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/video/${videoId}/suggest_model`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ model })
+    });
+
+    const data = await res.json();
+    const statusText = document.getElementById('suggestionStatus');
+
+    if (res.ok) {
+      statusText.innerText = data.message || "Sugestão enviada com sucesso!";
+      statusText.className = "text-green-400 text-sm mt-3";
+      setTimeout(() => window.location.reload(), 1500);
+    } else {
+      statusText.innerText = data.error || "Erro ao enviar sugestão.";
+      statusText.className = "text-red-400 text-sm mt-3";
+    }
+  } catch (error) {
+    console.error("Erro no fetch:", error);
+  }
+}
+

@@ -67,22 +67,33 @@
         </div>
 
         <div class="gradient-bg p-4 rounded-none mb-4 mx-4">
-            <div class="mb-6">
-                <h2 class="text-lg font-semibold text-gray-200 mb-3">Modelos:</h2>
-                {% if video.models %}
-                    <div class="flex flex-wrap gap-2">
-                        {% for modelo in video.models %}
-                            <a href="{{ url_for('main.perfil_modelo', name=modelo.name) }}" 
-                               class="inline-block px-4 py-2 bg-gradient-to-r from-red-700 to-red-900 rounded-lg text-white hover:from-red-600 hover:to-red-800 transition duration-300">
-                                <i class="fas fa-film mr-2"></i>{{ modelo.name }}
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <span class="text-gray-500">Modelo não especificado</span>
-                {% endif %}
+    <div class="mb-6">
+        <h2 class="text-lg font-semibold text-gray-200 mb-3">Modelos:</h2>
+        {% if video.models %}
+            <div class="flex flex-wrap gap-2 items-center">
+                {% for modelo in video.models %}
+                    <a href="{{ url_for('main.perfil_modelo', name=modelo.name) }}" 
+                       class="inline-block px-4 py-2 bg-gradient-to-r from-red-700 to-red-900 rounded-lg text-white hover:from-red-600 hover:to-red-800 transition duration-300">
+                        <i class="fas fa-film mr-2"></i>{{ modelo.name }}
+                    </a>
+                {% endfor %}
+                <!-- Botão Sugerir Modelo -->
+                <button onclick="openSuggestModelModal()" 
+                        class="ml-2 px-3 py-2 bg-red-700 text-white rounded hover:bg-red-600 transition duration-200">
+                    Sugerir modelo
+                </button>
             </div>
-        </div>
+        {% else %}
+            <div class="flex items-center gap-2">
+                <span class="text-gray-500">Modelo não especificado</span>
+                <button onclick="openSuggestModelModal()" 
+                        class="ml-2 px-3 py-2 bg-red-700 text-white rounded hover:bg-red-600 transition duration-200">
+                    Sugerir modelo
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
 
         <div>
             <h2 class="text-lg font-semibold text-gray-200 mb-3 px-4">Tags:</h2>
@@ -144,9 +155,24 @@
         <p>© 2025 Meu Blog de Vídeos</p>
     </footer>
 
+    <!-- Modal Sugerir Modelo -->
+<div id="suggestModelModal" data-video-id="{{ video.id }}" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
+  <div class="bg-gray-800 p-6 rounded-xl shadow-xl max-w-sm w-full text-white">
+    <h3 class="text-lg font-semibold mb-4">Sugerir nome da modelo</h3>
+    <input type="text" id="modelInput" placeholder="Digite o nome da modelo"
+           class="w-full p-2 rounded bg-gray-700 text-white mb-4 border border-gray-600">
+    <div class="flex justify-end gap-2">
+      <button onclick="closeSuggestModelModal()" class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-500">Cancelar</button>
+      <button onclick="submitModelSuggestion()" class="px-4 py-2 bg-red-700 rounded hover:bg-red-600">Enviar</button>
+    </div>
+    <p id="suggestionStatus" class="text-sm mt-3"></p>
+  </div>
+</div>
+
     <!-- Scripts -->
     <script>
         const likeUrl = "{{ url_for('video.like_video', video_id=video.id) }}";
     </script>
     <script src="{{ url_for('static', filename='js/video_player.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/video_edit.js') }}"></script>
 {% endblock %}

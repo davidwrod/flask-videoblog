@@ -113,7 +113,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 }
 
-
     fileInput.addEventListener("change", function () {
         dt = new DataTransfer();
         fileList.innerHTML = "";
