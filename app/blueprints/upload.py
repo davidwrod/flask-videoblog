@@ -125,18 +125,25 @@ def verificar_extensao_arquivo(arquivo):
 @upload_bp.route('/upload/process', methods=['POST'])
 @login_required
 def upload_video():
+    from app.tasks.video_tasks import process_video_task
+
     files = request.files.getlist('videos')
     model_names = request.form.getlist('models[]')
+
     if not files:
         flash("Faltam vídeos para upload.", "error")
         return redirect(url_for('main.upload_form'))
+
     if not model_names:
         model_names = ["Sem Nome"]
+
     unique_model_names = []
     for name in model_names:
         name = name.strip()
         if name and name not in unique_model_names:
             unique_model_names.append(name)
+
+    # Garante que os models existem no banco
     models = []
     for name in unique_model_names:
         model = Model.query.filter_by(name=name).first()
@@ -152,53 +159,38 @@ def upload_video():
         if not verificar_extensao_arquivo(file):
             flash(f'O arquivo "{file.filename}" tem uma extensão inválida.', 'error')
             return redirect(url_for('main.upload_form'))
+
         filename = secure_filename(file.filename)
         filepath = os.path.join(current_app.root_path, 'static', 'uploads', filename)
         file.save(filepath)
-        try:
-            probe = ffmpeg.probe(filepath)
-            video_stream = next((s for s in probe['streams'] if s['codec_type'] == 'video'), None)
-            if video_stream:
-                duration = float(video_stream.get('duration', 0))
-                width = int(video_stream.get('width', 0))
-                height = int(video_stream.get('height', 0))
-            else:
-                duration = width = height = 0
-        except Exception as e:
-            current_app.logger.error(f"Erro ao processar vídeo {filename}: {str(e)}")
-            duration = width = height = 0
 
-        compress_video_if_needed(filepath, width, height)
-
-        file_hash = calculate_file_hash(filepath)
-        size = os.path.getsize(filepath)
-        thumbnail_filename = generate_thumbnail(filepath, filename, duration)
-
-        title = request.form.get(f'title_{idx}', filename)
-        video = Video(title=title, filename=filename, thumbnail=thumbnail_filename,
-                      user_id=current_user.id, hash=file_hash, size=size,
-                      duration=duration, width=width, height=height)
-        video.models.extend(models)
-        db.session.add(video)
-        db.session.flush()
-
-        video_tags = []
+        # Aqui você coleta os IDs das tags associadas a esse vídeo (índice idx)
+        tags_ids = []
         for key in request.form.keys():
             if key.startswith(f'tags_{idx}_'):
                 try:
                     tag_id = int(key.split('_')[-1])
-                    tag = Tag.query.get(tag_id)
-                    if tag:
-                        video_tags.append(tag)
+                    tags_ids.append(tag_id)
                 except ValueError:
                     continue
-        for tag in video_tags:
-            video.tags.append(tag)
+
+        title = request.form.get(f'title_{idx}', filename)
+
+        process_video_task.delay(
+            filepath=filepath,
+            filename=filename,
+            user_id=current_user.id,
+            model_names=unique_model_names,
+            tags_ids=tags_ids,
+            title=title
+        )
+
         videos_uploaded += 1
 
-    db.session.commit()
     if videos_uploaded == 1:
         flash("1 vídeo foi enviado com sucesso!", "success")
-    if videos_uploaded > 1:
+    elif videos_uploaded > 1:
         flash(f"{videos_uploaded} vídeos foram enviados com sucesso!", "success")
+
     return redirect(url_for('main.perfil_publico', username=current_user.username))
+

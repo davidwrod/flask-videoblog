@@ -1,14 +1,10 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
-from flask_login import LoginManager
+from app.extensions import db, login_manager  # atualizado
 
 load_dotenv()
 
-db = SQLAlchemy()
-
-login_manager = LoginManager()
-login_manager.login_view = 'auth.login'
+from flask_login import LoginManager  # Pode remover depois que confirmar que está tudo certo
 
 def create_app():
     app = Flask(__name__)

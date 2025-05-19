@@ -81,32 +81,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function generateVideoDetails() {
-        detailsContainer.innerHTML = "";
-        Array.from(fileInput.files).forEach((file, index) => {
-            const tagOptions = availableTags.map(tag => `
-                <label class="mr-2">
-                    <input type="checkbox" name="tags_${index}_${tag.id}" value="${tag.id}">
-                    ${tag.name}
-                </label>
-            `).join('');
+    detailsContainer.innerHTML = "";
+    Array.from(fileInput.files).forEach((file, index) => {
+        const tagOptions = availableTags.map(tag => `
+            <label class="mr-2">
+                <input type="checkbox" name="tags_${index}_${tag.id}" value="${tag.id}">
+                ${tag.name}
+            </label>
+        `).join('');
 
-            const wrapper = document.createElement("div");
-            wrapper.innerHTML = `
-                <div class="border border-gray-700 p-4 rounded mb-4">
-                    <p class="font-semibold text-white">${file.name}</p>
-                    <label for="title_${index}" class="block text-sm text-gray-300 mt-2">Título:</label>
-                    <input type="text" name="title_${index}" id="title_${index}" placeholder="Título do vídeo" value="${file.name}" required
-                        class="w-full px-2 py-1 rounded bg-gray-800 text-white border border-gray-600 mb-2">
+        const videoURL = URL.createObjectURL(file);
 
-                    <label class="block text-sm text-gray-300">Tags (opcional):</label>
-                    <div class="flex flex-wrap gap-2 text-sm text-gray-200 mb-2">
-                        ${tagOptions}
-                    </div>
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+            <div class="border border-gray-700 p-4 rounded mb-4">
+                <p class="font-semibold text-white">${file.name}</p>
+
+                <video src="${videoURL}" controls class="w-full rounded mb-3 max-h-64"></video>
+
+                <label for="title_${index}" class="block text-sm text-gray-300 mt-2">Título:</label>
+                <input type="text" name="title_${index}" id="title_${index}" placeholder="Título do vídeo" value="${file.name}" required
+                    class="w-full px-2 py-1 rounded bg-gray-800 text-white border border-gray-600 mb-2">
+
+                <label class="block text-sm text-gray-300">Tags (opcional):</label>
+                <div class="flex flex-wrap gap-2 text-sm text-gray-200 mb-2">
+                    ${tagOptions}
                 </div>
-            `;
-            detailsContainer.appendChild(wrapper);
-        });
-    }
+            </div>
+        `;
+        detailsContainer.appendChild(wrapper);
+    });
+}
+
 
     fileInput.addEventListener("change", function () {
         dt = new DataTransfer();
