@@ -106,35 +106,55 @@ def edit_video_title(video_id):
     db.session.commit()
     return jsonify({'message': 'Título atualizado'})
 
+def get_video_path(filename):
+    return os.path.join(current_app.root_path, 'static', 'uploads', filename)
+
+def get_thumbnail_path(filename):
+    return os.path.join(current_app.root_path, 'static', 'thumbnails', filename)
+
 @main_bp.route('/delete_video/<int:video_id>', methods=['POST'])
 @login_required
 def delete_video(video_id):
     video = Video.query.get_or_404(video_id)
 
-    # Verifica permissão
+    #  Verifica permissão
     if video.user_id != current_user.id and current_user.role != 'admin':
         flash("Você não tem permissão para deletar este vídeo.", "error")
         return redirect(url_for('main.home'))
 
-    # Captura os modelos associados ANTES de deletar o vídeo
-    associated_models = list(video.models)  # Faz uma cópia da lista
+    #  Captura modelos associados antes de deletar o vídeo
+    associated_models = list(video.models)
 
-    # Remove arquivo físico (se aplicável)
+    #  Remove arquivo de vídeo
     if video.filename:
-        filepath = os.path.join(current_app.root_path, 'static', 'uploads', video.filename)
-        if os.path.exists(filepath):
+        video_path = get_video_path(video.filename)
+        if os.path.exists(video_path):
             try:
-                os.remove(filepath)
+                os.remove(video_path)
+                print(f"[INFO] Vídeo removido: {video_path}")
             except Exception as e:
-                flash(f"Erro ao remover arquivo: {str(e)}", "warning")
+                flash(f"Erro ao remover arquivo de vídeo: {str(e)}", "warning")
+        else:
+            print(f"[WARNING] Arquivo de vídeo não encontrado: {video_path}")
 
-    # Deleta o vídeo
+    #  Remove thumbnail
+    if video.thumbnail:
+        thumbnail_path = get_thumbnail_path(video.thumbnail)
+        if os.path.exists(thumbnail_path):
+            try:
+                os.remove(thumbnail_path)
+                print(f"[INFO] Thumbnail removida: {thumbnail_path}")
+            except Exception as e:
+                flash(f"Erro ao remover thumbnail: {str(e)}", "warning")
+        else:
+            print(f"[WARNING] Thumbnail não encontrada: {thumbnail_path}")
+
+    #  Remove o vídeo do banco
     db.session.delete(video)
     db.session.commit()
 
-    # Verifica modelos órfãos
+    #  Verifica e remove modelos órfãos
     for model in associated_models:
-        # Verifica se a modelo ainda tem vídeos associados
         has_remaining_videos = db.session.query(
             db.session.query(Video)
             .join(video_models)
@@ -144,7 +164,8 @@ def delete_video(video_id):
 
         if not has_remaining_videos:
             db.session.delete(model)
-    
+            print(f"[INFO] Modelo '{model.name}' removido pois ficou órfão.")
+
     db.session.commit()
 
     flash("Vídeo deletado com sucesso.", "success")
