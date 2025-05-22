@@ -1,7 +1,7 @@
 from flask import Flask
 from dotenv import load_dotenv
 from app.extensions import db, login_manager  # atualizado
-from app.storage import get_file_url
+from app.blueprints.main import get_thumbnail_url, get_video_url
 
 load_dotenv()
 
@@ -32,9 +32,8 @@ def create_app():
 
     from app.models import User
 
-    # Torna get_file_url disponível globalmente para todos os templates
-    app.jinja_env.globals['get_thumbnail_url'] = get_file_url
-    app.jinja_env.globals['get_video_url'] = get_file_url
+    app.jinja_env.globals['get_thumbnail_url'] = get_thumbnail_url
+    app.jinja_env.globals['get_video_url'] = get_video_url
 
     @login_manager.user_loader
     def load_user(user_id):

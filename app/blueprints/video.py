@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import Video, db, Model
-from app.storage import get_file_url
 video_bp = Blueprint('video', __name__)
 
 @video_bp.route('/video/<int:video_id>')
@@ -9,7 +8,7 @@ def video_view(video_id):
     video = Video.query.get_or_404(video_id)
     video.views += 1
     db.session.commit()
-    return render_template('video_view.html', video=video, get_video_url=get_file_url)
+    return render_template('video_view.html', video=video)
 
 @video_bp.route('/<int:video_id>/like', methods=['POST'])
 @login_required
