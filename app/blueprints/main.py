@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from .. import db
 import os
 from app.models import User, Video, Model, Tag, video_models
+from app.storage import delete_file, get_file_url
 
 main_bp = Blueprint('main', __name__)
 
@@ -106,11 +107,14 @@ def edit_video_title(video_id):
     db.session.commit()
     return jsonify({'message': 'Título atualizado'})
 
-def get_video_path(filename):
-    return os.path.join(current_app.root_path, 'static', 'uploads', filename)
+def get_video_url(filename):
+    from app.storage import get_file_url
+    return get_file_url(filename)
 
-def get_thumbnail_path(filename):
-    return os.path.join(current_app.root_path, 'static', 'thumbnails', filename)
+def get_thumbnail_url(filename):
+    from app.storage import get_file_url
+    return get_file_url(f"thumbnails/{filename}")
+
 
 @main_bp.route('/delete_video/<int:video_id>', methods=['POST'])
 @login_required
@@ -125,35 +129,27 @@ def delete_video(video_id):
     #  Captura modelos associados antes de deletar o vídeo
     associated_models = list(video.models)
 
-    #  Remove arquivo de vídeo
+    # Remove arquivo de vídeo do bucket
     if video.filename:
-        video_path = get_video_path(video.filename)
-        if os.path.exists(video_path):
-            try:
-                os.remove(video_path)
-                print(f"[INFO] Vídeo removido: {video_path}")
-            except Exception as e:
-                flash(f"Erro ao remover arquivo de vídeo: {str(e)}", "warning")
+        video_object = f"videos/{video.filename}"
+        if delete_file(video_object):
+            print(f"[INFO] Vídeo removido do bucket: {video_object}")
         else:
-            print(f"[WARNING] Arquivo de vídeo não encontrado: {video_path}")
+            print(f"[WARNING] Não foi possível remover vídeo: {video_object}")
 
-    #  Remove thumbnail
+    # Remove thumbnail do bucket
     if video.thumbnail:
-        thumbnail_path = get_thumbnail_path(video.thumbnail)
-        if os.path.exists(thumbnail_path):
-            try:
-                os.remove(thumbnail_path)
-                print(f"[INFO] Thumbnail removida: {thumbnail_path}")
-            except Exception as e:
-                flash(f"Erro ao remover thumbnail: {str(e)}", "warning")
+        thumbnail_object = f"thumbnails/{video.thumbnail}"
+        if delete_file(thumbnail_object):
+            print(f"[INFO] Thumbnail removida do bucket: {thumbnail_object}")
         else:
-            print(f"[WARNING] Thumbnail não encontrada: {thumbnail_path}")
+            print(f"[WARNING] Não foi possível remover thumbnail: {thumbnail_object}")
 
-    #  Remove o vídeo do banco
+    # Remove o vídeo do banco
     db.session.delete(video)
     db.session.commit()
 
-    #  Verifica e remove modelos órfãos
+    # Verifica e remove modelos órfãos
     for model in associated_models:
         has_remaining_videos = db.session.query(
             db.session.query(Video)

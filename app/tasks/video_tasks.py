@@ -13,6 +13,8 @@ from app.blueprints.upload import (
     # upload_to_bucket  # ainda não implementado
 )
 
+from app.storage import upload_file  # importa seu método do storage.py
+
 @celery.task(name='app.tasks.video_tasks.process_video_task')
 def process_video_task(filepath, filename, user_id, model_names, tags_ids, title):
     from app import create_app
@@ -48,9 +50,30 @@ def process_video_task(filepath, filename, user_id, model_names, tags_ids, title
             size = os.path.getsize(filepath)
 
             thumbnail_filename = generate_thumbnail(filepath, filename, duration)
+            thumbnail_path = os.path.join(current_app.root_path, 'static', 'thumbnails', thumbnail_filename)
 
-            # Aqui você pode chamar sua função para upload no bucket futuramente
-            # upload_to_bucket(filepath, filename)
+            # Upload vídeo
+            success_video = upload_file(filepath, filename)
+            if not success_video:
+                current_app.logger.error(f"Falha ao enviar vídeo '{filename}' para o bucket B2.")
+                return
+
+            # Upload thumbnail
+            success_thumb = upload_file(thumbnail_path, f"thumbnails/{thumbnail_filename}")
+            if not success_thumb:
+                current_app.logger.error(f"Falha ao enviar thumbnail '{thumbnail_filename}' para o bucket B2.")
+                return
+
+            # Remove arquivos locais
+            try:
+                os.remove(filepath)
+            except Exception as e:
+                current_app.logger.warning(f"Não foi possível remover o vídeo local {filepath}: {e}")
+
+            try:
+                os.remove(thumbnail_path)
+            except Exception as e:
+                current_app.logger.warning(f"Não foi possível remover a thumbnail local {thumbnail_path}: {e}")
 
             video = Video(
                 title=title,
@@ -73,6 +96,6 @@ def process_video_task(filepath, filename, user_id, model_names, tags_ids, title
             db.session.add(video)
             db.session.commit()
 
-            current_app.logger.info(f"Vídeo '{filename}' processado com sucesso.")
+            current_app.logger.info(f"Vídeo '{filename}' processado e enviado com sucesso.")
         except Exception as e:
             current_app.logger.error(f"Erro no processamento do vídeo '{filename}': {str(e)}")

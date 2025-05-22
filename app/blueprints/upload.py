@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 from app.models import db, Video, Model, Tag
 import os, subprocess, hashlib, uuid
 import ffmpeg
+import tempfile
 
 upload_bp = Blueprint('upload', __name__)
 
@@ -161,10 +162,13 @@ def upload_video():
             return redirect(url_for('main.upload_form'))
 
         filename = secure_filename(file.filename)
-        filepath = os.path.join(current_app.root_path, 'static', 'uploads', filename)
-        file.save(filepath)
 
-        # Aqui você coleta os IDs das tags associadas a esse vídeo (índice idx)
+        # Salva temporariamente para processar
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            file.save(tmp_file.name)
+            tmp_filepath = tmp_file.name
+
+        # Coleta IDs das tags associadas a esse vídeo (índice idx)
         tags_ids = []
         for key in request.form.keys():
             if key.startswith(f'tags_{idx}_'):
@@ -176,8 +180,9 @@ def upload_video():
 
         title = request.form.get(f'title_{idx}', filename)
 
+        # Chama tarefa celery para processar, compressão, thumbnail etc.
         process_video_task.delay(
-            filepath=filepath,
+            filepath=tmp_filepath,
             filename=filename,
             user_id=current_user.id,
             model_names=unique_model_names,

@@ -26,20 +26,21 @@
         </div>
 
         <div class="video-container mb-4">
-            <video 
-                id="my-video" 
-                class="video-js vjs-big-play-centered" 
-                controls 
-                preload="auto" 
-                data-setup="{}"
-            >
-                <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4" />
-                <p class="vjs-no-js">
-                    Para ver este vídeo, ative o JavaScript e considere atualizar para um
-                    navegador que suporte vídeo HTML5
-                </p>
-            </video>
-        </div>
+    <video 
+        id="my-video" 
+        class="video-js vjs-big-play-centered" 
+        controls 
+        preload="auto" 
+        data-setup="{}"
+    >
+        <source src="{{ get_video_url(video.filename) }}" type="video/mp4" />
+        <p class="vjs-no-js">
+            Para ver este vídeo, ative o JavaScript e considere atualizar para um
+            navegador que suporte vídeo HTML5.
+        </p>
+    </video>
+</div>
+
 
         <div class="flex justify-between items-center mb-4 px-4">
             <div class="flex space-x-6">

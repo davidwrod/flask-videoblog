@@ -3,7 +3,7 @@
     <a href="{{ url_for('video.video_view', video_id=video.id) }}" class="block h-full">
         <div class="video-thumbnail">
             {% if video.thumbnail %}
-            <img src="{{ url_for('static', filename='thumbnails/' + video.thumbnail) }}"
+            <img src="{{ get_thumbnail_url(video.thumbnail) }}"
                  alt="{{ video.title }}">
             {% else %}
             <div class="video-thumbnail-placeholder">
