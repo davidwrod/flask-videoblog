@@ -1,7 +1,7 @@
 from flask import Flask
 from dotenv import load_dotenv
 from app.extensions import db, login_manager  # atualizado
-from app.blueprints.main import get_thumbnail_url, get_video_url
+from app.blueprints.main import get_thumbnail_url, get_video_url, time_since
 from werkzeug.routing import BaseConverter
 
 class SlugConverter(BaseConverter):
@@ -40,6 +40,7 @@ def create_app():
 
     app.jinja_env.globals['get_thumbnail_url'] = get_thumbnail_url
     app.jinja_env.globals['get_video_url'] = get_video_url
+    app.jinja_env.filters['time_since'] = time_since
 
     @login_manager.user_loader
     def load_user(user_id):

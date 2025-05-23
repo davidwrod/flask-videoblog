@@ -173,3 +173,33 @@ def autocomplete_modelos():
     nomes = [modelo.name for modelo in resultados]
     return jsonify(nomes)
 
+from datetime import datetime
+
+def time_since(dt, default="há algum tempo"):
+    """
+    Retorna string tipo 'há 3 dias', 'há 2 meses', etc.
+    dt deve ser datetime passado (upload date).
+    """
+    now = datetime.utcnow()
+    diff = now - dt
+
+    seconds = diff.total_seconds()
+    periods = [
+        (seconds // 31536000, "ano", "anos"),        # 365*24*60*60
+        (seconds // 2592000, "mês", "meses"),        # 30*24*60*60
+        (seconds // 604800, "semana", "semanas"),    # 7*24*60*60
+        (seconds // 86400, "dia", "dias"),            # 24*60*60
+        (seconds // 3600, "hora", "horas"),           # 60*60
+        (seconds // 60, "minuto", "minutos"),
+        (seconds, "segundo", "segundos"),
+    ]
+
+    for period, singular, plural in periods:
+        if period >= 1:
+            period = int(period)
+            if period == 1:
+                return f"há {period} {singular}"
+            else:
+                return f"há {period} {plural}"
+
+    return default

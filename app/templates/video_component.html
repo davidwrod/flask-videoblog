@@ -24,6 +24,7 @@
             <div class="video-meta">
                 <span><i class="far fa-eye mr-1"></i> 👁️ ({{ video.views }}) </span>
                 <span id="like-count" class="ml-2 text-sm text-gray-400">❤️ ({{ video.likes|length }})</span>
+                <span class="ml-2 text-sm text-gray-400">📅 {{ video.uploaded_at | time_since }}</span>
             </div>
         </div>
     </a>
