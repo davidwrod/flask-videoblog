@@ -60,11 +60,11 @@
     <div class="video-grid">
         {% for video in videos %}
         <div class="video-card">
-            <a href="{{ url_for('video.video_view', video_id=video.id) }}">
+            <a href="{{ url_for('video.video_view', slug=video.slug) }}">
                 <!-- THUMBNAIL -->
                 <div class="video-thumbnail">
                     {% if video.thumbnail %}
-                        <img src="{{ url_for('static', filename='thumbnails/' + video.thumbnail) }}" 
+                        <img src="{{ get_thumbnail_url(video.thumbnail) }}" 
                              class="absolute top-0 left-0 w-full h-full object-cover">
                     {% else %}
                         <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black">
@@ -77,12 +77,12 @@
                 <div class="video-info">
                     <h3 class="video-title">{{ video.title }}</h3>
                     <div class="video-meta">
-                        <span>{{ video.uploaded_at.strftime('%d/%m/%Y') }}</span>
+                        <span>📅 {{ video.uploaded_at.strftime('%d/%m/%Y') }}</span>
                         {% if video.duration %}
                         <span> • {{ "%d:%02d"|format(video.duration//60, video.duration%60) }}</span>
                         {% endif %}
-                        <span><i class="far fa-eye mr-1"></i> ({{ video.views }}) Visualizações</span>
-                        <span id="like-count" class="ml-2 text-sm text-gray-400">Likes({{ video.likes|length }})</span>
+                        <span><i class="far fa-eye mr-1"></i>👁️ ({{ video.views }}) </span>
+                        <span id="like-count" class="ml-2 text-sm text-gray-400">❤️ ({{ video.likes|length }})</span>
                     </div>
                 </div>
             </a>

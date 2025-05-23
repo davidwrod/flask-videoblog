@@ -2,6 +2,10 @@ from flask import Flask
 from dotenv import load_dotenv
 from app.extensions import db, login_manager  # atualizado
 from app.blueprints.main import get_thumbnail_url, get_video_url
+from werkzeug.routing import BaseConverter
+
+class SlugConverter(BaseConverter):
+    regex = r'[a-zA-Z0-9_-]+'
 
 load_dotenv()
 
@@ -17,6 +21,8 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+
+    app.url_map.converters['slug'] = SlugConverter
 
     from app.blueprints.main import main_bp
     from app.blueprints.upload import upload_bp

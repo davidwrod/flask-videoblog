@@ -1,10 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.models import Video, Model, Tag, User
 from flask_login import login_required, current_user
 from .. import db
-import os
 from app.models import User, Video, Model, Tag, video_models
-from app.storage import delete_file, get_file_url
+from app.storage import delete_file
 
 main_bp = Blueprint('main', __name__)
 
@@ -48,9 +47,9 @@ def tags():
     tags = Tag.query.order_by(Tag.name).all()
     return render_template('tags.html', tags=tags)
 
-@main_bp.route('/tags/<tag_name>')
-def tag_videos(tag_name):
-    tag = Tag.query.filter_by(name=tag_name).first_or_404()
+@main_bp.route('/tags/<slug>')
+def tag_videos(slug):
+    tag = Tag.query.filter_by(slug=slug).first_or_404()
     page = request.args.get('page', 1, type=int)
     videos = tag.videos.order_by(Video.uploaded_at.desc()).paginate(page=page, per_page=15)
     return render_template('tag_videos.html', tag=tag, videos=videos)
@@ -60,9 +59,9 @@ def modelos():
     modelos = Model.query.filter(Model.name != "Sem Nome").order_by(Model.name.asc()).all()
     return render_template('modelos.html', modelos=modelos)
 
-@main_bp.route('/modelos/<name>')
-def perfil_modelo(name):
-    modelo = Model.query.filter_by(name=name).first_or_404()
+@main_bp.route('/modelos/<slug>')
+def perfil_modelo(slug):
+    modelo = Model.query.filter_by(slug=slug).first_or_404()
     page = request.args.get('page', 1, type=int)
     
     # Query CORRETA para filtrar vídeos da modelo:
@@ -71,7 +70,7 @@ def perfil_modelo(name):
                 .order_by(Video.uploaded_at.desc())\
                 .paginate(page=page, per_page=15)
     
-    return render_template('blueprint_modelos/perfil_modelo.html', modelo=modelo, videos=videos)
+    return render_template('perfil_modelo.html', modelo=modelo, videos=videos)
 
 @main_bp.route('/<username>')
 def perfil_publico(username):

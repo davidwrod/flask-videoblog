@@ -1,6 +1,6 @@
 {% macro video_thumbnail(video) %}
 <div class="video-card">
-    <a href="{{ url_for('video.video_view', video_id=video.id) }}" class="block h-full">
+    <a href="{{ url_for('video.video_view', slug=video.slug) }}" class="block h-full">
         <div class="video-thumbnail">
             {% if video.thumbnail %}
             <img src="{{ get_thumbnail_url(video.thumbnail) }}"
@@ -22,8 +22,8 @@
         <div class="video-info">
             <h3 class="video-title">{{ video.title }}</h3>
             <div class="video-meta">
-                <span><i class="far fa-eye mr-1"></i> ({{ video.views }}) Visualizações</span>
-                <span id="like-count" class="ml-2 text-sm text-gray-400">Likes({{ video.likes|length }})</span>
+                <span><i class="far fa-eye mr-1"></i> 👁️ ({{ video.views }}) </span>
+                <span id="like-count" class="ml-2 text-sm text-gray-400">❤️ ({{ video.likes|length }})</span>
             </div>
         </div>
     </a>

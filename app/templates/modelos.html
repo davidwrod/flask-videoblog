@@ -9,7 +9,7 @@
     {% if modelos %}
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {% for modelo in modelos %}
-                <a href="{{ url_for('main.perfil_modelo', name=modelo.name) }}" class="bg-black rounded-lg p-4 hover:bg-red-800 transition">
+                <a href="{{ url_for('main.perfil_modelo', slug=modelo.slug) }}" class="bg-black rounded-lg p-4 hover:bg-red-800 transition">
                     <div class="text-center">
                         <i class="fas fa-user text-3xl mb-2 text-red-400"></i>
                         <p class="text-lg font-medium truncate">{{ modelo.name }}</p>
