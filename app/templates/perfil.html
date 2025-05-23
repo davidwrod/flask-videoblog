@@ -43,6 +43,17 @@
         opacity: 0.5;
         pointer-events: none;
     }
+    .video-duration {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    font-weight: 500;
+}
 </style>
 
 <div class="profile-header">
@@ -73,16 +84,18 @@
                             </svg>
                         </div>
                     {% endif %}
+                    {% if video.duration %}
+            <span class="video-duration">
+                {{ "%d:%02d"|format(video.duration//60, video.duration%60) }}
+            </span>
+            {% endif %}
                 </div>
                 <div class="video-info">
                     <h3 class="video-title">{{ video.title }}</h3>
                     <div class="video-meta">
-                        <span>📅 {{ video.uploaded_at.strftime('%d/%m/%Y') }}</span>
-                        {% if video.duration %}
-                        <span> • {{ "%d:%02d"|format(video.duration//60, video.duration%60) }}</span>
-                        {% endif %}
-                        <span><i class="far fa-eye mr-1"></i>👁️ ({{ video.views }}) </span>
-                        <span id="like-count" class="ml-2 text-sm text-gray-400">❤️ ({{ video.likes|length }})</span>
+                        <span><i class="far fa-eye mr-1"></i>👁️({{video.views }}) </span>
+                        <span id="like-count" class="ml-2 text-sm text-gray-400">❤️({{ video.likes|length }})  </span>
+                        <span>   📅 {{ video.uploaded_at.strftime('%d/%m/%Y') }} </span>
                     </div>
                 </div>
             </a>
