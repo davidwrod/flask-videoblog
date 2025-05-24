@@ -202,3 +202,51 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+const form = document.querySelector("form");
+const progressContainer = document.getElementById("progress-container");
+const progressBar = document.getElementById("progress-bar");
+
+form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", form.action, true);
+
+    // Mostrar barra
+    progressContainer.classList.remove("hidden");
+
+    xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            progressBar.style.width = percent + "%";
+            progressBar.textContent = percent + "%";
+        }
+    });
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            progressBar.style.width = "100%";
+            progressBar.textContent = "Upload concluído!";
+            setTimeout(() => {
+                window.location.href = xhr.responseURL;
+            }, 1000);
+        } else {
+            alert("Erro no upload.");
+            progressBar.style.width = "0%";
+            progressBar.textContent = "0%";
+            progressContainer.classList.add("hidden");
+        }
+    };
+
+    xhr.onerror = function () {
+        alert("Falha na conexão.");
+        progressBar.style.width = "0%";
+        progressBar.textContent = "0%";
+        progressContainer.classList.add("hidden");
+    };
+
+    xhr.send(formData);
+});

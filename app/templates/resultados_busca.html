@@ -2,7 +2,7 @@
 {% from 'video_component.html' import video_thumbnail %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-white">
+<div class="container mx-auto px-4 py-8">
     {% if videos %}
     <div class="video-grid">
         {% for video in videos %}
@@ -16,7 +16,7 @@
     <h2 class="text-xl font-semibold mb-3 px-2 mt-6">Modelos</h2>
     <div class="flex flex-wrap gap-3 mb-8 px-2">
         {% for modelo in modelos %}
-        <a href="{{ url_for('main.perfil_modelo', name=modelo.name) }}" class="text-red-400 hover:underline">
+        <a href="{{ url_for('main.perfil_modelo', slug=modelo.slug) }}" class="text-red-400 hover:underline">
             {{ modelo.name }}
         </a>
         {% endfor %}
@@ -27,7 +27,7 @@
     <h2 class="text-xl font-semibold mb-3 px-2 mt-6">Tags</h2>
     <div class="flex flex-wrap gap-3 px-2">
         {% for tag in tags %}
-        <a href="{{ url_for('main.tag_videos', tag_name=tag.name) }}" class="text-blue-400 hover:underline">
+        <a href="{{ url_for('main.tag_videos', slug=tag.slug) }}" class="text-blue-400 hover:underline">
             #{{ tag.name }}
         </a>
         {% endfor %}
