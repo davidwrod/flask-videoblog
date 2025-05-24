@@ -42,7 +42,7 @@ def cadastro():
             db.session.add(user)
             db.session.commit()
             flash('Cadastro realizado com sucesso!', 'success')
-            return redirect(url_for('main.home'))
+            return redirect(url_for('auth.login'))
         except IntegrityError:
             db.session.rollback()
             flash('Esse nome de usuário ou e-mail já está em uso. Escolha outro.', 'danger')

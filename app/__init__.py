@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from app.extensions import db, login_manager  # atualizado
 from app.blueprints.main import get_thumbnail_url, get_video_url, time_since
 from werkzeug.routing import BaseConverter
+from flask_wtf import CSRFProtect
 
 class SlugConverter(BaseConverter):
     regex = r'[a-zA-Z0-9_-]+'
@@ -24,6 +25,9 @@ def create_app():
 
     app.url_map.converters['slug'] = SlugConverter
 
+    csrf = CSRFProtect()
+    csrf.init_app(app)
+
     from app.blueprints.main import main_bp
     from app.blueprints.upload import upload_bp
     from app.blueprints.video import video_bp
@@ -37,6 +41,13 @@ def create_app():
     app.register_blueprint(admin_bp)
 
     from app.models import User
+
+    from flask_wtf.csrf import generate_csrf
+
+    @app.after_request
+    def inject_csrf_token(response):
+        response.set_cookie('csrf_token', generate_csrf())
+        return response
 
     app.jinja_env.globals['get_thumbnail_url'] = get_thumbnail_url
     app.jinja_env.globals['get_video_url'] = get_video_url

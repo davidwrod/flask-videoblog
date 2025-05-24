@@ -2,6 +2,7 @@ from flask import Blueprint, request, redirect, url_for, flash, current_app, ren
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.models import db, Video, Model, Tag
+from app.forms import EmptyForm
 import os, subprocess, hashlib, uuid
 import ffmpeg
 import tempfile
@@ -104,16 +105,23 @@ def compress_video_if_needed(filepath, width, height):
 @upload_bp.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload_form():
-    if request.method == 'POST':  # Quando for POST, chama o upload_video
+    form = EmptyForm()
+    if form.validate_on_submit():
+        # Se o POST for válido (incluindo CSRF), chama upload_video
         return upload_video()
-    
-    # Quando for GET, renderiza o formulário
-    models = Model.query.all()
-    tags = Tag.query.all()  # Carregar todas as tags existentes
 
+    # Se for GET ou form inválido, renderiza o formulário
+    models = Model.query.all()
+    tags = Tag.query.all()
     serialized_tags = [{'id': tag.id, 'name': tag.name} for tag in tags]
 
-    return render_template('upload_form.html', models=models, tags=serialized_tags, current_user = current_user)
+    return render_template(
+        'upload_form.html',
+        form=form,
+        models=models,
+        tags=serialized_tags,
+        current_user=current_user
+    )
 
 def verificar_extensao_arquivo(arquivo):
     EXTENSOES_PERMITIDAS = {'mp4', 'webm', 'mkv', 'mov', 'avi'}

@@ -1,7 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const csrfToken = document.cookie.split('; ')
+        .find(row => row.startsWith('csrf_token='))
+        ?.split('=')[1];
+
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', function () {
-            const videoId = this.dataset.id;
             const card = this.closest('.video-card');
             card.querySelector('.video-info').classList.add('hidden');
             card.querySelector('.action-buttons').classList.add('hidden');
@@ -13,8 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', function () {
             const form = this.closest('.edit-form');
             form.classList.add('hidden');
-            form.closest('.video-card').querySelector('.video-info').classList.remove('hidden');
-            form.closest('.video-card').querySelector('.action-buttons').classList.remove('hidden');
+            const card = form.closest('.video-card');
+            card.querySelector('.video-info').classList.remove('hidden');
+            card.querySelector('.action-buttons').classList.remove('hidden');
         });
     });
 
@@ -33,7 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(`/edit_video_title/${videoId}`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
                     },
                     body: JSON.stringify({ new_title: newTitle })
                 });
@@ -45,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.querySelector('.action-buttons').classList.remove('hidden');
                     this.classList.add('hidden');
                 } else {
-                    throw new Error('Falha ao atualizar');
+                    const error = await response.json();
+                    alert(error.error || 'Erro ao atualizar o título');
                 }
             } catch (error) {
                 alert('Erro ao atualizar o título');
@@ -59,28 +65,33 @@ function openSuggestModelModal() {
     document.getElementById('suggestModelModal').classList.remove('hidden');
     document.getElementById('suggestionStatus').innerText = '';
     document.getElementById('modelInput').value = '';
-  }
+}
 
-  function closeSuggestModelModal() {
+function closeSuggestModelModal() {
     document.getElementById('suggestModelModal').classList.add('hidden');
-  }
+}
 
-  async function submitModelSuggestion() {
+async function submitModelSuggestion() {
   const model = document.getElementById('modelInput').value.trim();
   if (!model) return;
 
   const modalEl = document.getElementById('suggestModelModal');
-  const videoId = modalEl.dataset.videoId;  // pega do atributo data-video-id
+  const videoSlug = modalEl.dataset.videoSlug;
 
-  if (!videoId) {
-    console.error("Video ID não encontrado no modal.");
+  if (!videoSlug) {
+    console.error("Video slug não encontrado no modal.");
     return;
   }
 
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
   try {
-    const res = await fetch(`/video/${videoId}/suggest_model`, {
+    const res = await fetch(`/video/${videoSlug}/suggest_model`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
       body: JSON.stringify({ model })
     });
 

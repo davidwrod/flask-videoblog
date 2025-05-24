@@ -2,18 +2,6 @@
 
 {% block content %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="mb-4">
-      {% for category, message in messages %}
-        <div class="text-sm px-4 py-2 rounded bg-{{ 'red' if category == 'danger' else 'green' }}-600 text-white">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
-
 <div class="container mx-auto px-4 py-12">
     <div class="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg overflow-hidden">
         <!-- Cabeçalho -->
@@ -23,7 +11,7 @@
         </div>
         
         <!-- Formulário -->
-        <form class="p-6 space-y-6" action="{{ url_for('main.cadastro') }}" method="POST">
+        <form class="p-6 space-y-6" action="{{ url_for('auth.cadastro') }}" method="POST">
             {{ form.hidden_tag() }}
             
             <!-- Email -->
@@ -118,8 +106,7 @@
     </div>
 </div>
 
-<!-- Footer -->
-<footer class="bg-gray-900 border-t border-gray-800 py-8 mt-12">
+<footer class="bg-black border-t border-gray-800 py-8 mt-12 w-[100vw] ml-[calc(50%-50vw)]">
     <div class="container mx-auto px-4">
         <div class="text-center text-gray-400 text-sm">
             <p>&copy; 2025 MeuBlog. Todos os direitos reservados.</p>
@@ -131,6 +118,7 @@
         </div>
     </div>
 </footer>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

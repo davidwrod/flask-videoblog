@@ -14,3 +14,6 @@ class LoginForm(FlaskForm):
     username = StringField('Nome de usuário', validators=[DataRequired()])
     password = PasswordField('Senha', validators=[DataRequired()])
     remember_me = BooleanField('Lembrar de mim')
+
+class EmptyForm(FlaskForm):
+    pass

@@ -53,23 +53,64 @@ def suggest_model(slug):
     if not suggested_model_name:
         return jsonify({'error': 'Nome da modelo é obrigatório'}), 400
 
+    # Validação simples do nome (ex: tamanho mínimo)
+    if len(suggested_model_name) < 2:
+        return jsonify({'error': 'Nome da modelo muito curto'}), 400
+
     video = Video.query.filter_by(slug=slug).first_or_404()
 
     # Permissão
     if current_user.role not in ['admin', 'mod'] and current_user.id != video.user_id:
         return jsonify({'error': 'Você não tem permissão para alterar este vídeo'}), 403
 
-    # Busca ou cria o modelo
-    model_obj = Model.query.filter_by(name=suggested_model_name).first()
-    if not model_obj:
-        model_obj = Model(name=suggested_model_name)
-        db.session.add(model_obj)
-        db.session.commit()  # Para garantir que o model tenha id e slug
+    try:
+        # Busca ou cria o modelo
+        model_obj = Model.query.filter_by(name=suggested_model_name).first()
+        if not model_obj:
+            model_obj = Model(name=suggested_model_name)
+            db.session.add(model_obj)
 
-    # Verifica se o modelo já está associado
-    if model_obj not in video.models:
-        video.models.append(model_obj)
+        # Associa a modelo ao vídeo, se ainda não associada
+        if model_obj not in video.models:
+            video.models.append(model_obj)
+
         db.session.commit()
 
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Erro ao salvar no banco de dados'}), 500
+
     return jsonify({'success': True, 'message': 'Modelo sugerido atualizado com sucesso'})
+
+
+@video_bp.route('/video/<slug:slug>/remove_model', methods=['POST'])
+@login_required
+def remove_model(slug):
+    data = request.get_json()
+    model_name = (data.get('model') or '').strip()
+
+    if not model_name:
+        return jsonify({'error': 'Nome da modelo é obrigatório'}), 400
+
+    video = Video.query.filter_by(slug=slug).first_or_404()
+
+    # Verifica permissão: apenas admin, mod ou dono do vídeo
+    if current_user.role not in ['admin', 'mod'] and current_user.id != video.user_id:
+        return jsonify({'error': 'Você não tem permissão para alterar este vídeo'}), 403
+
+    # Busca o modelo ignorando case
+    model_obj = Model.query.filter(Model.name.ilike(model_name)).first()
+
+    if not model_obj:
+        return jsonify({'error': 'Modelo não encontrado'}), 404
+
+    # Se o vídeo não tem modelos associados ou o modelo não está associado, retorna erro
+    if not video.models or model_obj not in video.models:
+        return jsonify({'error': 'Este modelo não está associado ao vídeo'}), 400
+
+    # Remove associação e salva
+    video.models.remove(model_obj)
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Modelo removido com sucesso'})
 

@@ -67,7 +67,7 @@
 
         <form action="{{ url_for('upload.upload_video', _external=False) }}" method="POST" enctype="multipart/form-data"
             class="space-y-4">
-            
+            {{ form.hidden_tag() }}
             <!-- Seção de modelos com autocomplete -->
             <div>
                 <label for="model-search" class="block text-gray-300 text-sm mb-1">Modelos:</label>
