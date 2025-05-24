@@ -74,8 +74,8 @@
                         {% endfor %}
                         {% if current_user.is_authenticated and current_user.id == video.user_id or current_user.role == 'admin'%}
                         <button onclick="openSuggestModelModal()" 
-                                class="ml-2 px-3 py-2 bg-red-700 text-white rounded hover:bg-red-600 transition duration-200">
-                            Sugerir modelo
+                                class="ml-2 px-3 py-2 bg-red-900 text-white rounded hover:bg-red-800 transition duration-200 text-lg font-semibold">
+                            +
                         </button>
                         {% endif %}
                     </div>
@@ -83,9 +83,8 @@
                     <div class="flex items-center gap-2">
                         <span class="text-gray-500">Modelo não especificado</span>
                         {% if current_user.is_authenticated and current_user.id == video.user_id or current_user.role == 'admin'%}
-                        <button onclick="openSuggestModelModal()" 
-                                class="ml-2 px-3 py-2 bg-red-700 text-white rounded hover:bg-red-600 transition duration-200">
-                            Sugerir modelo
+                        <button onclick="openSuggestModelModal()" class="ml-2 w-10 h-10 flex items-center justify-center bg-red-900 text-white rounded hover:bg-red-800 transition duration-200 text-2xl font-bold">
+                            +
                         </button>
                         {% endif %}
                     </div>

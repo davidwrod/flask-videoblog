@@ -42,13 +42,6 @@ def create_app():
 
     from app.models import User
 
-    from flask_wtf.csrf import generate_csrf
-
-    @app.after_request
-    def inject_csrf_token(response):
-        response.set_cookie('csrf_token', generate_csrf())
-        return response
-
     app.jinja_env.globals['get_thumbnail_url'] = get_thumbnail_url
     app.jinja_env.globals['get_video_url'] = get_video_url
     app.jinja_env.filters['time_since'] = time_since

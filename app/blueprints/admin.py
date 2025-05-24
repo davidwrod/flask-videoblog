@@ -76,4 +76,67 @@ def unificar_modelos():
 
     return render_template('admin/unificar_modelos.html', modelos=modelos)
 
+@admin_bp.route('/adminpanel')
+@login_required
+def admin_panel():
+    # Aqui você pode checar se o usuário tem permissão de admin
+    if current_user.role != 'admin':
+        return "Acesso negado", 403
+    
+    # Renderize o template da página do painel admin
+    return render_template('admin/adminpanel.html')
 
+@admin_bp.route('/modelos', methods=['GET', 'POST'])
+@login_required
+def manage_modelos():
+    if current_user.role != 'admin':
+        return "Acesso negado. Apenas administradores.", 403
+
+    if request.method == 'POST':
+        modelo_name = request.form.get('name', '').strip()
+
+        if modelo_name and not Model.query.filter_by(name=modelo_name).first():
+            new_modelo = Model(name=modelo_name)
+            db.session.add(new_modelo)
+            db.session.commit()
+            flash(f"Modelo '{modelo_name}' criado com sucesso.", 'success')
+        return redirect(url_for('admin.manage_modelos'))
+
+    modelos = Model.query.order_by(Model.name).all()
+    return render_template('admin/manage_modelos.html', modelos=modelos)
+
+
+@admin_bp.route('/edit_modelo/<int:modelo_id>', methods=['POST'])
+@login_required
+def edit_modelo(modelo_id):
+    if current_user.role != 'admin':
+        return "Acesso negado. Apenas administradores.", 403
+
+    modelo = Model.query.get_or_404(modelo_id)
+    new_name = request.form.get('new_name', '').strip()
+
+    if new_name:
+        modelo.name = new_name
+        db.session.commit()
+        flash(f"Modelo atualizado para '{new_name}'.", 'success')
+
+    return redirect(url_for('admin.manage_modelos'))
+
+
+@admin_bp.route('/delete_modelo/<int:modelo_id>', methods=['POST'])
+@login_required
+def delete_modelo(modelo_id):
+    if current_user.role != 'admin':
+        return "Acesso negado. Apenas administradores.", 403
+
+    modelo = Model.query.get_or_404(modelo_id)
+
+    # Remove a associação dos vídeos antes de excluir
+    for video in modelo.videos:
+        video.models.remove(modelo)
+
+    db.session.delete(modelo)
+    db.session.commit()
+    flash(f"Modelo '{modelo.name}' excluído com sucesso.", 'success')
+
+    return redirect(url_for('admin.manage_modelos'))

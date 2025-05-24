@@ -3,32 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <title>Gerenciar Tags</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Gerenciar Tags</h1>
+<body class="bg-gray-900 text-white">
+
+<div class="max-w-2xl mx-auto mt-10 bg-gray-800 p-6 rounded-xl shadow-lg">
+
+    <h1 class="text-3xl font-bold mb-6 text-center">Gerenciar Tags</h1>
 
     <!-- Formulário para adicionar nova tag -->
-    <form method="POST" action="{{ url_for('admin.manage_tags') }}">
-        <label for="name">Nova tag:</label>
-        <input type="text" id="name" name="name" required>
-        <button type="submit">Criar</button>
+    <form method="POST" action="{{ url_for('admin.manage_tags') }}" class="mb-6 flex gap-4">
+        <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            required 
+            placeholder="Nova tag" 
+            class="flex-grow px-4 py-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button 
+            type="submit" 
+            class="px-4 py-2 bg-blue-700 rounded hover:bg-blue-600 transition"
+        >
+            Adicionar
+        </button>
     </form>
 
-    <hr>
+    <hr class="border-gray-600 mb-6">
 
-    <!-- Lista de tags existentes com opção de exclusão -->
-    <h2>Tags existentes</h2>
-    <ul>
+    <!-- Lista de tags existentes -->
+    <h2 class="text-2xl font-semibold mb-4">Tags existentes</h2>
+
+    <ul class="space-y-2">
         {% for tag in tags %}
-            <li>
-                {{ tag.name }}
-                <form method="POST" action="{{ url_for('admin.delete_tag', tag_id=tag.id) }}" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta tag?')">Excluir</button>
+            <li class="flex justify-between items-center bg-gray-700 px-4 py-2 rounded">
+                <span>{{ tag.name }}</span>
+                <form method="POST" action="{{ url_for('admin.delete_tag', tag_id=tag.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button 
+                        type="submit" 
+                        onclick="return confirm('Tem certeza que deseja excluir esta tag?')" 
+                        class="ml-2 px-2 py-1 bg-red-800 text-white rounded hover:bg-red-700 transition text-lg"
+                    >
+                        Excluir
+                    </button>
                 </form>
             </li>
         {% else %}
-            <p>Nenhuma tag cadastrada ainda.</p>
+            <p class="text-center text-gray-400">Nenhuma tag cadastrada ainda.</p>
         {% endfor %}
     </ul>
+
+</div>
+
 </body>
 </html>

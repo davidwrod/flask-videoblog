@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Painel Admin</title>
+</head>
+<body>
+    <h1>Painel Administrativo</h1>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('admin.manage_tags') }}">Gerenciar Tags</a></li>
+            <li><a href="{{ url_for('admin.unificar_modelos') }}">Unificar Modelos</a></li>
+            <li><a href="{{ url_for('admin.manage_modelos') }}" >Gerenciar Modelos</a></li>
+
+        </ul>
+    </nav>
+</body>
+</html>

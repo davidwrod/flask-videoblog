@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciar Modelos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+
+<div class="max-w-2xl mx-auto mt-10 bg-gray-800 p-6 rounded-xl shadow-lg">
+    <h1 class="text-2xl font-bold mb-6 text-center">Gerenciar Modelos</h1>
+
+    <!-- Formulário para adicionar novo modelo -->
+    <form method="POST" action="{{ url_for('admin.manage_modelos') }}" class="flex gap-2 mb-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="text" name="name" placeholder="Novo modelo" required
+               class="flex-1 p-2 rounded bg-gray-700 text-white">
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition">Adicionar</button>
+    </form>
+
+    <hr class="mb-6 border-gray-600">
+
+    <!-- Lista de modelos -->
+    <h2 class="text-xl font-semibold mb-4">Modelos existentes</h2>
+
+    {% if modelos %}
+        <ul class="space-y-4">
+            {% for modelo in modelos %}
+                <li class="bg-gray-700 p-3 rounded flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <form method="POST" action="{{ url_for('admin.edit_modelo', modelo_id=modelo.id) }}" class="flex gap-2">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="text" name="new_name" value="{{ modelo.name }}" required
+                                   class="p-1 rounded bg-gray-800 text-white">
+                            <button type="submit"
+                                    class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 rounded transition">Renomear</button>
+                        </form>
+                    </div>
+                    <form method="POST" action="{{ url_for('admin.delete_modelo', modelo_id=modelo.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit"
+                                onclick="return confirm('Deseja realmente excluir o modelo {{ modelo.name }}?')"
+                                class="ml-2 px-3 py-1 bg-red-800 hover:bg-red-700 rounded transition text-lg">
+                            Excluir
+                        </button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-center">Nenhum modelo cadastrado ainda.</p>
+    {% endif %}
+</div>
+
+</body>
+</html>
