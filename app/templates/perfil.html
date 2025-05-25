@@ -108,7 +108,8 @@
                     Editar Título
                 </button>
                 <form method="POST" action="{{ url_for('main.delete_video', video_id=video.id) }}" class="inline">
-                    <button type="submit" class="text-xs text-gray-400 hover:text-white" 
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="text-xs text-gray-400 hover:text-white"
                             onclick="return confirm('Tem certeza que deseja deletar este vídeo?');">
                         Deletar
                     </button>

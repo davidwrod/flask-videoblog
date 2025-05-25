@@ -9,8 +9,7 @@ import ffmpeg
 from app.blueprints.upload import (
     compress_video_if_needed,
     calculate_file_hash,
-    generate_thumbnail,
-    # upload_to_bucket  # ainda não implementado
+    generate_thumbnail
 )
 
 from app.storage import upload_file  # importa seu método do storage.py

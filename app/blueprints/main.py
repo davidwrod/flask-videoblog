@@ -121,7 +121,7 @@ def delete_video(video_id):
     video = Video.query.get_or_404(video_id)
 
     #  Verifica permissão
-    if video.user_id != current_user.id and current_user.role != 'admin':
+    if video.user_id != current_user.id or current_user.role != 'admin':
         flash("Você não tem permissão para deletar este vídeo.", "error")
         return redirect(url_for('main.home'))
 

@@ -7,31 +7,36 @@ document.addEventListener('DOMContentLoaded', function () {
     const modelSearch = document.getElementById("model-search");
     const selectedModels = document.getElementById("selected-models");
     const modelInputs = document.getElementById("model-inputs");
+    const dropZone = document.getElementById("drop-zone");
+    const progressContainer = document.getElementById("progress-container");
+    const progressBar = document.getElementById("progress-bar");
+    const form = document.querySelector("form");
 
     const autocompleteUrl = modelSearch.dataset.autocompleteUrl;
 
     let dt = new DataTransfer();
     let selectedModelsList = [];
 
+    // 🔍 Autocomplete de modelos
     $(modelSearch).autocomplete({
-        source: function(request, response) {
+        source: function (request, response) {
             $.ajax({
                 url: autocompleteUrl,
                 dataType: "json",
                 data: { q: request.term },
-                success: function(data) {
+                success: function (data) {
                     const filteredData = data.filter(model => !selectedModelsList.includes(model));
                     response(filteredData);
                 }
             });
         },
         minLength: 1,
-        select: function(event, ui) {
+        select: function (event, ui) {
             addModel(ui.item.value);
             $(this).val('');
             return false;
         }
-    }).on('keypress', function(e) {
+    }).on('keypress', function (e) {
         if (e.which === 13) {
             e.preventDefault();
             const value = $(this).val().trim();
@@ -74,44 +79,44 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         document.querySelectorAll('.model-tag .remove').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 removeModel(this.getAttribute('data-model'));
             });
         });
     }
 
     function generateVideoDetails() {
-    detailsContainer.innerHTML = "";
-    Array.from(fileInput.files).forEach((file, index) => {
-        const tagOptions = availableTags.map(tag => `
-            <label class="mr-2">
-                <input type="checkbox" name="tags_${index}_${tag.id}" value="${tag.id}">
-                ${tag.name}
-            </label>
-        `).join('');
+        detailsContainer.innerHTML = "";
+        Array.from(fileInput.files).forEach((file, index) => {
+            const tagOptions = availableTags.map(tag => `
+                <label class="mr-2">
+                    <input type="checkbox" name="tags_${index}_${tag.id}" value="${tag.id}">
+                    ${tag.name}
+                </label>
+            `).join('');
 
-        const videoURL = URL.createObjectURL(file);
+            const videoURL = URL.createObjectURL(file);
 
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = `
-            <div class="border border-gray-700 p-4 rounded mb-4">
-                <p class="font-semibold text-white">${file.name}</p>
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = `
+                <div class="border border-gray-700 p-4 rounded mb-4">
+                    <p class="font-semibold text-white">${file.name}</p>
 
-                <video src="${videoURL}" controls class="w-full rounded mb-3 max-h-64"></video>
+                    <video src="${videoURL}" controls class="w-full rounded mb-3 max-h-64"></video>
 
-                <label for="title_${index}" class="block text-sm text-gray-300 mt-2">Título:</label>
-                <input type="text" name="title_${index}" id="title_${index}" placeholder="Título do vídeo" value="${file.name}" required
-                    class="w-full px-2 py-1 rounded bg-gray-800 text-white border border-gray-600 mb-2">
+                    <label for="title_${index}" class="block text-sm text-gray-300 mt-2">Título:</label>
+                    <input type="text" name="title_${index}" id="title_${index}" value="${file.name}" required
+                        class="w-full px-2 py-1 rounded bg-gray-800 text-white border border-gray-600 mb-2">
 
-                <label class="block text-sm text-gray-300">Tags (opcional):</label>
-                <div class="flex flex-wrap gap-2 text-sm text-gray-200 mb-2">
-                    ${tagOptions}
+                    <label class="block text-sm text-gray-300">Tags (opcional):</label>
+                    <div class="flex flex-wrap gap-2 text-sm text-gray-200 mb-2">
+                        ${tagOptions}
+                    </div>
                 </div>
-            </div>
-        `;
-        detailsContainer.appendChild(wrapper);
-    });
-}
+            `;
+            detailsContainer.appendChild(wrapper);
+        });
+    }
 
     fileInput.addEventListener("change", function () {
         dt = new DataTransfer();
@@ -163,8 +168,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const dropZone = document.getElementById("drop-zone");
-
     dropZone.addEventListener("dragover", (e) => {
         e.preventDefault();
         dropZone.classList.add("border-red-500", "bg-gray-800");
@@ -189,64 +192,54 @@ document.addEventListener('DOMContentLoaded', function () {
         fileInput.dispatchEvent(event);
     });
 
-    fileInput.addEventListener('change', (event) => {
-        const arquivos = Array.from(event.target.files);
-        const tiposValidos = ['video/mp4', 'video/webm', 'video/x-matroska', 'video/quicktime', 'video/x-msvideo'];
+    // 🔥 Upload com barra de progresso
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
 
-        for (const arquivo of arquivos) {
-            if (!tiposValidos.includes(arquivo.type)) {
-                alert(`Arquivo inválido: ${arquivo.name}`);
-                event.target.value = '';
-                break;
+        const formData = new FormData(form);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", form.action, true);
+        xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest"); // 🔥 ESSENCIAL
+
+        progressContainer.classList.remove("hidden");
+
+        xhr.upload.addEventListener("progress", (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = percent + "%";
+                progressBar.textContent = percent + "%";
             }
-        }
-    });
-});
+        });
 
-const form = document.querySelector("form");
-const progressContainer = document.getElementById("progress-container");
-const progressBar = document.getElementById("progress-bar");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                progressBar.style.width = "100%";
+                progressBar.textContent = "Upload concluído!";
+                setTimeout(() => {
+                    window.location.href = response.redirect_url;
+                }, 1000);
+            } else {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    alert(response.message);
+                } catch (e) {
+                    alert("Erro no upload.");
+                }
+                progressBar.style.width = "0%";
+                progressBar.textContent = "0%";
+                progressContainer.classList.add("hidden");
+            }
+        };
 
-form.addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const formData = new FormData(form);
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", form.action, true);
-
-    // Mostrar barra
-    progressContainer.classList.remove("hidden");
-
-    xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 100);
-            progressBar.style.width = percent + "%";
-            progressBar.textContent = percent + "%";
-        }
-    });
-
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            progressBar.style.width = "100%";
-            progressBar.textContent = "Upload concluído!";
-            setTimeout(() => {
-                window.location.href = xhr.responseURL;
-            }, 1000);
-        } else {
-            alert("Erro no upload.");
+        xhr.onerror = function () {
+            alert("Falha na conexão.");
             progressBar.style.width = "0%";
             progressBar.textContent = "0%";
             progressContainer.classList.add("hidden");
-        }
-    };
+        };
 
-    xhr.onerror = function () {
-        alert("Falha na conexão.");
-        progressBar.style.width = "0%";
-        progressBar.textContent = "0%";
-        progressContainer.classList.add("hidden");
-    };
-
-    xhr.send(formData);
+        xhr.send(formData);
+    });
 });

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, url_for, flash, current_app, render_template
+from flask import Blueprint, request, redirect, url_for, flash, current_app, render_template, jsonify
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.models import db, Video, Model, Tag, Notification
@@ -8,29 +8,6 @@ import ffmpeg
 import tempfile
 
 upload_bp = Blueprint('upload', __name__)
-
-COMPRESS_PROFILES = {
-    "480p": {
-        "max_bitrate": 2_000_000,  # 2 Mbps
-        "crf": 27,
-        "timeout": 300  # 5 minutos
-    },
-    "720p": {
-        "max_bitrate": 4_000_000,  # 4 Mbps
-        "crf": 24,
-        "timeout": 600  # 10 minutos
-    },
-    "1080p": {
-        "max_bitrate": 8_000_000,  # 8 Mbps
-        "crf": 23,
-        "timeout": 1200  # 20 minutos
-    },
-    "4K": {
-        "max_bitrate": 16_000_000,  # 16 Mbps
-        "crf": 21,
-        "timeout": 3600  # 1 hora
-    }
-}
 
 def calculate_file_hash(filepath):
     BUF_SIZE = 65536
@@ -69,16 +46,18 @@ def generate_thumbnail(video_path, video_filename, duration):
         current_app.logger.error(f"Erro ao gerar thumbnail para {video_filename}: {str(e)}")
         return None
 
-def compress_video_if_needed(filepath, width, height):
+def compress_video_if_needed(filepath, width, height, timeout=1200):
     try:
         probe = ffmpeg.probe(filepath)
         format_info = probe.get('format', {})
-        bit_rate = int(format_info.get('bit_rate', 0))
+        bit_rate = int(format_info.get('bit_rate', 0)) or 0
     except Exception as e:
         current_app.logger.error(f"Erro ao obter bitrate para compressão: {str(e)}")
         bit_rate = 0
 
-    resolution = max(width, height)
+    resolution = min(width, height)
+
+    # Limites baseados na resolução
     if resolution <= 480:
         limit_bps = 2_000_000
         crf = "27"
@@ -88,19 +67,54 @@ def compress_video_if_needed(filepath, width, height):
     elif resolution <= 1080:
         limit_bps = 8_000_000
         crf = "23"
-    else:
-        limit_bps = float('inf')
+    elif resolution <= 1440:  # 2K
+        limit_bps = 15_000_000
         crf = "21"
+    else:  # 4K ou maior
+        limit_bps = 25_000_000
+        crf = "20"
 
-    if bit_rate > limit_bps or resolution > 1080:
+    current_app.logger.info(f"Arquivo: {filepath}")
+    current_app.logger.info(f"Resolução detectada: {width}x{height} (avaliando {resolution}p)")
+    current_app.logger.info(f"Bitrate detectado: {bit_rate} bps")
+    current_app.logger.info(f"Limite para essa resolução: {limit_bps} bps")
+
+    if bit_rate == 0:
+        current_app.logger.warning("Bitrate não detectado, optando por NÃO comprimir por segurança.")
+        return
+
+    needs_compression = bit_rate > limit_bps
+
+    if needs_compression:
         tmp_dir = os.path.join(current_app.root_path, 'tmp')
         os.makedirs(tmp_dir, exist_ok=True)
         temp_path = os.path.join(tmp_dir, f"{uuid.uuid4().hex[:12]}.mp4")
-        cmd = ["ffmpeg", "-i", filepath, "-c:v", "libx264", "-preset", "slow", "-crf", crf,
-               "-c:a", "aac", "-b:a", "128k", "-y", temp_path]
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        cmd = [
+            "ffmpeg", "-i", filepath,
+            "-c:v", "libx264", "-preset", "slow", "-crf", crf,
+            "-c:a", "aac", "-b:a", "128k",
+            "-y", temp_path
+        ]
+
+        current_app.logger.info(f"Iniciando compressão: {' '.join(cmd)}")
+
+        try:
+            subprocess.run(cmd, timeout=timeout, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except subprocess.TimeoutExpired:
+            current_app.logger.error(f"Compressão excedeu o tempo limite ({timeout}s) para {filepath}")
+            raise
+
         if os.path.exists(temp_path):
             os.replace(temp_path, filepath)
+            current_app.logger.info(f"Compressão concluída e arquivo substituído: {filepath}")
+        else:
+            current_app.logger.error(f"Falha na compressão, arquivo temporário não encontrado: {temp_path}")
+            raise Exception("Compressão falhou.")
+    else:
+        current_app.logger.info("Compressão não necessária para este vídeo.")
+
+
 
 @upload_bp.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -136,23 +150,25 @@ def verificar_extensao_arquivo(arquivo):
 def upload_video():
     from app.tasks.video_tasks import process_video_task
 
+    MAX_FILE_SIZE = 1.2 * 1024 * 1024 * 1024  # 1.2 GB
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     files = request.files.getlist('videos')
     model_names = request.form.getlist('models[]')
 
     if not files:
-        flash("Faltam vídeos para upload.", "error")
+        msg = "Faltam vídeos para upload."
+        if is_ajax:
+            return jsonify({"status": "error", "message": msg}), 400
+        flash(msg, "error")
         return redirect(url_for('main.upload_form'))
 
     if not model_names:
         model_names = ["Sem Nome"]
 
-    unique_model_names = []
-    for name in model_names:
-        name = name.strip()
-        if name and name not in unique_model_names:
-            unique_model_names.append(name)
+    unique_model_names = list({name.strip() for name in model_names if name.strip()})
 
-    # Garante que os models existem no banco
+    # Models
     models = []
     for name in unique_model_names:
         model = Model.query.filter_by(name=name).first()
@@ -164,19 +180,73 @@ def upload_video():
     db.session.commit()
 
     videos_uploaded = 0
+
     for idx, file in enumerate(files):
         if not verificar_extensao_arquivo(file):
-            flash(f'O arquivo "{file.filename}" tem uma extensão inválida.', 'error')
+            msg = f'O arquivo "{file.filename}" tem uma extensão inválida.'
+            if is_ajax:
+                return jsonify({"status": "error", "message": msg}), 400
+            flash(msg, 'error')
             return redirect(url_for('main.upload_form'))
+
+        # 🔥 Verificar tamanho
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(0)
+
+        if file_size > MAX_FILE_SIZE:
+            url = url_for('main.perfil_publico', username=current_user.username)
+            noti = Notification(
+                user_id=current_user.id,
+                message=f"O vídeo '{file.filename}' não foi enviado. Excede o limite de 1.2GB.",
+                url=url
+            )
+            db.session.add(noti)
+            db.session.commit()
+
+            msg = f"O vídeo '{file.filename}' excede o limite de 1.2GB."
+
+            if is_ajax:
+                return jsonify({
+                    "status": "error",
+                    "message": msg,
+                    "redirect_url": url
+                }), 413
+
+            flash(msg, 'error')
+            continue
 
         filename = secure_filename(file.filename)
 
-        # Salva temporariamente para processar
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             file.save(tmp_file.name)
             tmp_filepath = tmp_file.name
 
-        # Coleta IDs das tags associadas a esse vídeo (índice idx)
+        file_hash = calculate_file_hash(tmp_filepath)
+        video_existente = Video.query.filter_by(hash=file_hash).first()
+
+        if video_existente:
+            slug = video_existente.slug
+            url = url_for('video.video_view', slug=slug)
+
+            noti = Notification(
+                user_id=current_user.id,
+                message="O vídeo que você tentou enviar já existe. Clique aqui para ser redirecionado",
+                url=url
+            )
+            db.session.add(noti)
+            db.session.commit()
+
+            if is_ajax:
+                return jsonify({
+                    "status": "duplicado",
+                    "message": f"O vídeo '{filename}' já existe no sistema.",
+                }), 409
+
+            flash(f"O vídeo '{filename}' já existe. Verifique suas notificações.", "warning")
+            os.remove(tmp_filepath)
+            continue
+
         tags_ids = []
         for key in request.form.keys():
             if key.startswith(f'tags_{idx}_'):
@@ -188,7 +258,6 @@ def upload_video():
 
         title = request.form.get(f'title_{idx}', filename)
 
-        # Chama tarefa celery para processar, compressão, thumbnail etc.
         process_video_task.delay(
             filepath=tmp_filepath,
             filename=filename,
@@ -200,12 +269,9 @@ def upload_video():
 
         videos_uploaded += 1
 
-    if videos_uploaded == 1:
-        flash("1 vídeo foi enviado com sucesso!", "success")
-    elif videos_uploaded > 1:
-        flash(f"{videos_uploaded} vídeos foram enviados com sucesso!", "success")
-
     msg = f"{videos_uploaded} vídeo{'s' if videos_uploaded > 1 else ''} enviado{'s' if videos_uploaded > 1 else ''} com sucesso. Seus vídeos estão sendo processados e serão publicados em breve."
+
+#  Cria notificação
     n = Notification(
         user_id=current_user.id,
         message=msg,
@@ -214,5 +280,16 @@ def upload_video():
     db.session.add(n)
     db.session.commit()
 
-    return redirect(url_for('main.perfil_publico', username=current_user.username))
+    #  Detecta se é requisição via AJAX (JS) ou formulário normal
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
+    if is_ajax:
+        return jsonify({
+            "status": "success",
+            "message": msg,
+            "redirect_url": url_for('main.perfil_publico', username=current_user.username)
+        }), 200
+
+    #  Se for formulário tradicional (não XHR)
+    flash(msg, "success")
+    return redirect(url_for('main.perfil_publico', username=current_user.username))

@@ -7,7 +7,12 @@ notification_bp = Blueprint('notification', __name__, url_prefix='/notifications
 @notification_bp.route('/list')
 @login_required
 def list_notifications():
-    notifs = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    notifs = (Notification.query
+              .filter_by(user_id=current_user.id)
+              .order_by(Notification.created_at.desc())
+              .limit(8)  # 🔥 Limita para as 10 mais recentes
+              .all())
+
     data = [{
         'id': n.id,
         'message': n.message,
@@ -15,6 +20,7 @@ def list_notifications():
         'is_read': n.is_read,
         'created_at': n.created_at.strftime('%d/%m/%Y %H:%M')
     } for n in notifs]
+
     return jsonify(data)
 
 @notification_bp.route('/count')
