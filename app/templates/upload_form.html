@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -10,7 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload de Vídeos</title>
     <style>
-        /* Customização do autocomplete */
         .ui-autocomplete {
             background-color: #1f2937;
             border: 1px solid #374151;
@@ -61,55 +59,59 @@
     </style>
 </head>
 
-<body class="bg-gray-900 text-white min-h-screen p-4">
+<body class="bg-[#212121] text-white min-h-screen p-4">
     <div class="max-w-3xl mx-auto">
+        <!-- 🔙 Botão Voltar -->
+        <div class="mb-4">
+            <a href="/" class="bg-gray-700 hover:bg-gray-800 px-4 py-2 rounded shadow text-sm font-semibold">
+                ← Voltar para a Home
+            </a>
+        </div>
+
         <h1 class="text-2xl font-bold mb-6 text-red-500">Upload de Vídeos</h1>
 
         <form action="{{ url_for('upload.upload_video', _external=False) }}" method="POST" enctype="multipart/form-data"
-            class="space-y-4">
+              class="space-y-4">
             {{ form.hidden_tag() }}
-            <!-- Seção de modelos com autocomplete -->
+
+            <!-- Modelos -->
             <div>
                 <label for="model-search" class="block text-gray-300 text-sm mb-1">Modelos:</label>
                 <div class="relative">
                     <input type="text" id="model-search" name="models[]"
-                        data-autocomplete-url="{{ url_for('main.autocomplete_modelos') }}"
-                        class="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-600 focus:border-red-500 focus:outline-none"
-                        placeholder="Digite o nome da modelo...">
+                           data-autocomplete-url="{{ url_for('main.autocomplete_modelos') }}"
+                           class="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-600 focus:border-red-500 focus:outline-none"
+                           placeholder="Digite o nome da modelo...">
                     <p class="text-xs text-gray-400 mt-1">Digite para buscar modelos existentes ou criar novas</p>
                 </div>
-                
-                <!-- Container para exibir as modelos selecionadas -->
+
                 <div id="selected-models" class="mt-3 flex flex-wrap"></div>
-                
-                <!-- Campo hidden que armazenará os nomes das modelos para envio -->
                 <div id="model-inputs"></div>
             </div>
 
-            <!-- Upload dos vídeos -->
-            <div id="drop-zone" class="relative border-2 border-dashed border-gray-500 rounded p-6 text-center cursor-pointer hover:border-red-500 transition">
+            <!-- Upload -->
+            <div id="drop-zone"
+                 class="relative border-2 border-dashed border-gray-500 rounded p-12 text-center cursor-pointer hover:border-red-500 transition">
                 <p class="text-gray-400">Arraste e solte os arquivos aqui ou clique para selecionar</p>
-                <input 
-                type="file" 
-                name="videos" 
-                id="videos" 
-                accept="video/*" 
-                multiple 
-                required
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                >
+                <input type="file"
+                       name="videos"
+                       id="videos"
+                       accept="video/*"
+                       multiple
+                       required
+                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
             </div>
 
-            <!-- Lista de arquivos com botão remover -->
+            <!-- Arquivos -->
             <div id="file-list" class="space-y-2 mt-2"></div>
 
-            <!-- Campos dinâmicos de título e tags -->
+            <!-- Detalhes -->
             <div id="video-details"></div>
 
-            <!-- Botão de envio -->
+            <!-- Botão Enviar -->
             <div>
                 <button type="submit"
-                    class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold shadow">
+                        class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold shadow">
                     Enviar Vídeos
                 </button>
             </div>
@@ -117,8 +119,10 @@
             <!-- Barra de Progresso -->
             <div id="progress-container" class="hidden mt-4">
                 <div class="w-full bg-gray-700 rounded">
-                    <div id="progress-bar" class="bg-red-600 text-xs font-medium text-white text-center p-1 leading-none rounded"
-                        style="width: 0%">0%</div>
+                    <div id="progress-bar"
+                         class="bg-red-600 text-xs font-medium text-white text-center p-1 leading-none rounded"
+                         style="width: 0%">0%
+                    </div>
                 </div>
             </div>
 
@@ -126,12 +130,10 @@
     </div>
 
 <script>
-    // As tags devem vir do servidor como uma lista de dicionários: [{id: 1, name: 'Tag1'}, ...]
     window.availableTags = JSON.parse('{{ tags | tojson | safe }}');
 </script>
 
 <script src="{{ url_for('static', filename='js/video_upload.js') }}"></script>
 
 </body>
-
 </html>

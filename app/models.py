@@ -38,6 +38,18 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.role}')"
 
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    url = db.Column(db.String(255))  # Link opcional
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('notifications', lazy='dynamic'))
+
 
 class Model(db.Model):
     __tablename__ = 'models'

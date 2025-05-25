@@ -1,7 +1,7 @@
 from flask import Blueprint, request, redirect, url_for, flash, current_app, render_template
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from app.models import db, Video, Model, Tag
+from app.models import db, Video, Model, Tag, Notification
 from app.forms import EmptyForm
 import os, subprocess, hashlib, uuid
 import ffmpeg
@@ -204,6 +204,15 @@ def upload_video():
         flash("1 vídeo foi enviado com sucesso!", "success")
     elif videos_uploaded > 1:
         flash(f"{videos_uploaded} vídeos foram enviados com sucesso!", "success")
+
+    msg = f"{videos_uploaded} vídeo{'s' if videos_uploaded > 1 else ''} enviado{'s' if videos_uploaded > 1 else ''} com sucesso. Seus vídeos estão sendo processados e serão publicados em breve."
+    n = Notification(
+        user_id=current_user.id,
+        message=msg,
+        url=url_for('main.perfil_publico', username=current_user.username)
+    )
+    db.session.add(n)
+    db.session.commit()
 
     return redirect(url_for('main.perfil_publico', username=current_user.username))
 

@@ -1,6 +1,6 @@
 from flask import Flask
 from dotenv import load_dotenv
-from app.extensions import db, login_manager  # atualizado
+from app.extensions import db, login_manager, migrate
 from app.blueprints.main import get_thumbnail_url, get_video_url, time_since
 from werkzeug.routing import BaseConverter
 from flask_wtf import CSRFProtect
@@ -22,6 +22,7 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+    migrate.init_app(app, db)
 
     app.url_map.converters['slug'] = SlugConverter
 
@@ -33,7 +34,9 @@ def create_app():
     from app.blueprints.video import video_bp
     from app.blueprints.auth import auth_bp
     from app.blueprints.admin import admin_bp
+    from app.blueprints.notification import notification_bp
 
+    app.register_blueprint(notification_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(upload_bp)
     app.register_blueprint(video_bp)

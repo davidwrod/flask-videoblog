@@ -60,7 +60,7 @@ def suggest_model(slug):
     video = Video.query.filter_by(slug=slug).first_or_404()
 
     # Permissão
-    if current_user.role not in ['admin', 'mod'] and current_user.id != video.user_id:
+    if current_user.role not in ['admin', 'mod'] or current_user.id != video.user_id:
         return jsonify({'error': 'Você não tem permissão para alterar este vídeo'}), 403
 
     try:

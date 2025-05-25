@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Notificações</title>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+
+    <h1 class="text-2xl font-bold mb-4">Notificações</h1>
+
+    <button id="mark-all" class="mb-4 px-4 py-2 bg-red-600 rounded hover:bg-red-700">
+        Marcar todas como lidas
+    </button>
+
+    <div class="space-y-4">
+        {% for n in notifications %}
+            <div class="p-4 rounded border {{ 'border-gray-600' if n.is_read else 'border-red-500' }}">
+                <p class="font-semibold">{{ n.message }}</p>
+                <p class="text-sm text-gray-400">{{ n.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                {% if n.url %}
+                    <a href="{{ n.url }}" class="text-red-400 hover:underline">Ver mais</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <p>Sem notificações.</p>
+        {% endfor %}
+    </div>
+
+    <script>
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    document.getElementById('mark-all').addEventListener('click', () => {
+        fetch('/notifications/mark_all_read', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(() => window.location.reload());
+    });
+</script>
+
+
+</body>
+</html>
