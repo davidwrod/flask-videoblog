@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Video, db, Model, Tag
+from app.models import Video, db, Model, Tag, User, Notification
 from sqlalchemy import func
 
 video_bp = Blueprint('video', __name__)
@@ -59,28 +59,40 @@ def suggest_model(slug):
 
     video = Video.query.filter_by(slug=slug).first_or_404()
 
-    # Permissão
-    if current_user.role not in ['admin', 'mod'] or current_user.id != video.user_id:
-        return jsonify({'error': 'Você não tem permissão para alterar este vídeo'}), 403
+    slug = video.slug
+    url = url_for('video.video_view', slug=slug)
+    admin = User.query.filter_by(role='admin').first()
 
-    try:
-        # Busca ou cria o modelo
-        model_obj = Model.query.filter_by(name=suggested_model_name).first()
-        if not model_obj:
-            model_obj = Model(name=suggested_model_name)
-            db.session.add(model_obj)
+    if current_user.id != video.user_id:
 
-        # Associa a modelo ao vídeo, se ainda não associada
-        if model_obj not in video.models:
-            video.models.append(model_obj)
-
+        noti = Notification(
+            user_id=admin.id,
+            message=f"{current_user.username} Sugere que o nome da modelo do vídeo {slug} é: {suggested_model_name}",
+            url=url
+        )
+        db.session.add(noti)
         db.session.commit()
 
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': 'Erro ao salvar no banco de dados'}), 500
+    if current_user.role in ['admin', 'mod'] or current_user.id == video.user_id:
 
-    return jsonify({'success': True, 'message': 'Modelo sugerido atualizado com sucesso'})
+        try:
+            # Busca ou cria o modelo
+            model_obj = Model.query.filter_by(name=suggested_model_name).first()
+            if not model_obj:
+                model_obj = Model(name=suggested_model_name)
+                db.session.add(model_obj)
+
+            # Associa a modelo ao vídeo, se ainda não associada
+            if model_obj not in video.models:
+                video.models.append(model_obj)
+
+            db.session.commit()
+
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': 'Erro ao salvar no banco de dados'}), 500
+
+    return jsonify({'success': True, 'message': 'A sua sugestão foi enviada com sucesso'})
 
 
 @video_bp.route('/video/<slug:slug>/remove_model', methods=['POST'])
