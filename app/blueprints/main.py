@@ -10,7 +10,7 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def home():
     page = request.args.get('page', 1, type=int)
-    per_page = 30
+    per_page = 50
     pagination = Video.query.order_by(Video.uploaded_at.desc()).paginate(page=page, per_page=per_page)
     return render_template('home.html', videos=pagination.items, pagination=pagination)
 
@@ -18,7 +18,7 @@ def home():
 def search():
     termo = request.args.get('q', '').strip()
     page = request.args.get('page', 1, type=int)
-    per_page = 30
+    per_page = 50
     if not termo:
         flash("Digite algo para buscar.", "warning")
         return redirect(url_for('main.home'))
@@ -51,7 +51,7 @@ def tags():
 def tag_videos(slug):
     tag = Tag.query.filter_by(slug=slug).first_or_404()
     page = request.args.get('page', 1, type=int)
-    videos = tag.videos.order_by(Video.uploaded_at.desc()).paginate(page=page, per_page=15)
+    videos = tag.videos.order_by(Video.uploaded_at.desc()).paginate(page=page, per_page=50)
     return render_template('tag_videos.html', tag=tag, videos=videos)
 
 @main_bp.route('/modelos')
@@ -68,7 +68,7 @@ def perfil_modelo(slug):
     videos = Video.query.join(Video.models)\
                 .filter(Model.id == modelo.id)\
                 .order_by(Video.uploaded_at.desc())\
-                .paginate(page=page, per_page=15)
+                .paginate(page=page, per_page=50)
     
     return render_template('perfil_modelo.html', modelo=modelo, videos=videos)
 

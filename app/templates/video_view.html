@@ -21,7 +21,7 @@
                 <span class="group-hover:text-blue-400 transition duration-200">{{ video.user.username }}</span>
             </a>
             <span><i class="far fa-eye mr-1"></i>👁️ {{ video.views }}</span>
-            <span><i class="far fa-calendar-alt mr-1"></i> {% if video.uploaded_at %}📅 {{ video.uploaded_at.strftime('%d/%m/%Y') }}{% else %}Data não disponível{% endif %}</span>
+            <span><i class="far fa-calendar-alt mr-1"></i> {% if video.uploaded_at %}📅 {{ video.uploaded_at | time_since }}{% endif %}</span>
         </div>
 
         <div class="video-container mb-4">

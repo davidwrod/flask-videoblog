@@ -71,7 +71,7 @@
 
                 <span class="hidden md:block text-sm">Logado como <strong>{{ current_user.username }}</strong></span>
                 <a href="{{ url_for('main.perfil_publico', username=current_user.username) }}"
-                   class="hidden md:block text-sm hover:text-red-400 transition-colors">Meu Perfil</a>
+                   class="hidden md:block text-sm hover:text-red-600 transition-colors">Meu Perfil</a>
                 <a href="{{ url_for('auth.logout') }}"
                    class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg font-medium transition-all">Sair</a>
             {% else %}
