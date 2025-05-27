@@ -12,22 +12,26 @@
 <body class="bg-[#212121] text-gray-100 min-h-screen overflow-x-hidden">
 
 <!-- Navbar -->
-<nav class="bg-[#1c1c1c] text-white w-full shadow-lg">
+<nav class="bg-[#141414] text-white">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
         <!-- Logo -->
-        <div class="flex-grow hidden md:block">
-            <a href="/" class="text-red-600 font-extrabold text-2xl flex items-center hover:text-red-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
-                <span>flaskvideotest</span>
-            </a>
-        </div>
+<div class="hidden md:block">
+    <a href="/" class="text-red-600 font-bold text-xl flex items-center hover:text-red-500 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        <span>flaskvideotest</span>
+    </a>
+</div>
 
-        <div class="flex-grow mx-6 hidden md:block">
+        <!-- Área Central com Barra de Busca e Ações do Usuário -->
+        <div class="flex items-center space-x-2 flex-1 max-w-2xl mx-4">
+
+        <!-- Barra de busca -->
+        <div class="flex-grow mx-4 hidden md:block">
             <form action="{{ url_for('main.search') }}" method="GET" class="relative">
                 <input type="text" name="q" placeholder="Buscar"
-                       class="search-input w-full bg-gray-800 text-white px-4 py-2.5 rounded-lg pr-12 placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-red-600 transition-all">
+                       class="w-full bg-gray-800 text-white px-4 py-2.5 rounded-lg pr-12 placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-red-600 transition-all">
                 <button type="submit"
                         class="absolute right-0 top-0 h-full px-4 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
                         aria-label="Buscar">
@@ -37,6 +41,7 @@
                 </button>
             </form>
         </div>
+    </div>
 
         <!-- User Actions -->
         <div class="flex items-center space-x-4">
@@ -83,56 +88,77 @@
     </div>
 
         <!-- Navigation Links -->
-    <div class="border-t border-gray-800 hidden md:block">
+    <div class="border-t border-gray-800">
         <div class="container mx-auto px-4">
-            <ul class="flex flex-wrap space-x-6 py-3">
-                <li><a href="/" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                    </svg>Início</a></li>
+            <ul class="flex flex-wrap justify-center md:justify-start gap-2 md:gap-6 py-3">
+                <li>
+                    <a href="/" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Início
+                    </a>
+                </li>
 
-                <li><a href="/recentes" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>Recentes</a></li>
+                <li>
+                    <a href="/recentes" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Recentes
+                    </a>
+                </li>
 
-                <li><a href="/top-view" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                    </svg>Mais Acessados</a></li>
+                <li>
+                    <a href="/top-view" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                        Mais Acessados
+                    </a>
+                </li>
 
-                <li><a href="/top-rated" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                    </svg>Mais Curtidos</a></li>
+                <li>
+                    <a href="/top-rated" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                        </svg>
+                        Mais Curtidos
+                    </a>
+                </li>
 
-                <li><a href="/tags" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586L20 10l-7 7-6.586-6.586C6.024 10.024 6 9.512 6 9V4c0-.552.448-1 1-1z"/>
-                    </svg>Tags</a></li>
+                <li>
+                    <a href="/tags" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586L20 10l-7 7-6.586-6.586C6.024 10.024 6 9.512 6 9V4c0-.552.448-1 1-1z"/>
+                        </svg>
+                        Tags
+                    </a>
+                </li>
 
-                <li><a href="/modelos" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>Modelos</a></li>
+                <li>
+                    <a href="/modelos" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Modelos
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
-
 </nav>
 
 <main class="container mx-auto px-4 py-6">
     {% block content %}
     {% endblock %}
 </main>
-
-<!-- JS Menu mobile -->
-<script>
-    document.getElementById('menu-toggle').onclick = function () {
-        const menu = document.getElementById('menu');
-        menu.classList.toggle('hidden');
-    };
-</script>
 
 <!-- 🔥 JS de Notificações -->
 {% if current_user.is_authenticated %}
@@ -145,6 +171,15 @@
 
     notifButton.addEventListener('click', () => {
         notifDropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', function(event) {
+        const notifButton = document.getElementById('notif-button');
+        const notifDropdown = document.getElementById('notif-dropdown');
+            
+        if (!notifButton.contains(event.target) && !notifDropdown.contains(event.target)) {
+            notifDropdown.classList.add('hidden');
+        }
     });
 
     async function fetchNotifs() {

@@ -101,3 +101,22 @@ a:hover {
     color: #fa0202;
     text-decoration: underline;
 }
+
+.upload-btn {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    transition: all 0.3s ease;
+    }
+
+ .upload-btn:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+.notification-icon {
+    transition: all 0.3s ease;
+    }
+
+.notification-icon:hover {
+    background-color: rgba(55, 65, 81, 0.8);
+    }
