@@ -275,7 +275,6 @@ if (notifButton && notifDropdown && notifCount && notifList) {
     };
 
     const closeMenu = (e) => {
-      e.preventDefault();
       mobileMenu.classList.add('opacity-0', 'scale-95');
       mobileMenu.classList.remove('opacity-100', 'scale-100');
       menuBtn.setAttribute('aria-expanded', 'false');
@@ -294,7 +293,9 @@ if (notifButton && notifDropdown && notifCount && notifList) {
 
     mobileMenu.querySelectorAll('a').forEach(link => {
       ['click', 'touchstart'].forEach(evt => {
-        link.addEventListener(evt, closeMenu);
+      mobileMenu.classList.remove('flex');
+      mobileMenu.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
       });
     });
   });
