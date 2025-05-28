@@ -8,27 +8,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/video-thumbnails.css') }}">
+      {% block head %}{% endblock %}
 </head>
 <body class="bg-[#212121] text-gray-100 min-h-screen overflow-x-hidden">
 
-<!-- Navbar -->
-<nav class="bg-[#141414] text-white">
-    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+<!-- Navbar Desktop -->
+<nav class="hidden md:block bg-zinc-900 px-6 py-2">
+    <!-- Parte Superior -->
+    <div class="flex justify-between items-center">
         <!-- Logo -->
-<div class="hidden md:block">
-    <a href="/" class="text-red-600 font-bold text-xl flex items-center hover:text-red-500 transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z"/>
-        </svg>
-        <span>flaskvideotest</span>
-    </a>
-</div>
-
-        <!-- Área Central com Barra de Busca e Ações do Usuário -->
-        <div class="flex items-center space-x-2 flex-1 max-w-2xl mx-4">
+        <div>
+            <a href="/" class="text-red-600 font-bold text-xl flex items-center hover:text-red-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <span>flaskvideotest</span>
+            </a>
+        </div>
 
         <!-- Barra de busca -->
-        <div class="flex-grow mx-4 hidden md:block">
+        <div class="flex-1 max-w-2xl mx-8">
             <form action="{{ url_for('main.search') }}" method="GET" class="relative">
                 <input type="text" name="q" placeholder="Buscar"
                        class="w-full bg-gray-800 text-white px-4 py-2.5 rounded-lg pr-12 placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-red-600 transition-all">
@@ -41,11 +40,9 @@
                 </button>
             </form>
         </div>
-    </div>
 
         <!-- User Actions -->
         <div class="flex items-center space-x-4">
-            <!-- Upload Button -->
             <a href="/upload" class="upload-btn px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold" aria-label="Upload de Vídeo">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -54,7 +51,7 @@
             </a>
 
             {% if current_user.is_authenticated %}
-                <!-- 🔔 Sino de notificações -->
+                <!-- Sino de notificações -->
                 <div class="relative">
                 <button id="notif-button" class="notification-icon p-2 hover:bg-gray-700 rounded-lg relative">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-300 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,162 +70,235 @@
                         </div>
                     </div>
                 </div>
-
                 <span class="hidden md:block text-sm">Logado como <strong>{{ current_user.username }}</strong></span>
-                <a href="{{ url_for('main.perfil_publico', username=current_user.username) }}"
-                   class="hidden md:block text-sm hover:text-red-600 transition-colors">Meu Perfil</a>
-                <a href="{{ url_for('auth.logout') }}"
-                   class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg font-medium transition-all">Sair</a>
+                <a href="{{ url_for('main.perfil_publico', username=current_user.username) }}" class="hidden md:block text-sm hover:text-red-600 transition-colors">Meu Perfil</a>
+                <a href="{{ url_for('auth.logout') }}" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg font-medium transition-all">Sair</a>
             {% else %}
                 <a href="{{ url_for('auth.login') }}" class="hover:underline text-red-400">Login</a>
-                <a href="{{ url_for('auth.cadastro') }}"
-                   class="bg-red-700 hover:bg-red-800 px-3 py-1 rounded font-bold">Cadastro</a>
+                <a href="{{ url_for('auth.cadastro') }}" class="bg-red-700 hover:bg-red-800 px-3 py-1 rounded font-bold">Cadastro</a>
             {% endif %}
         </div>
     </div>
 
-        <!-- Navigation Links -->
-    <div class="border-t border-gray-800">
+    <!-- Parte Inferior - Links de Navegação -->
+    <div class="border-t border-gray-800 mt-4">
         <div class="container mx-auto px-4">
             <ul class="flex flex-wrap justify-center md:justify-start gap-2 md:gap-6 py-3">
-                <li>
-                    <a href="/" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                        </svg>
-                        Início
-                    </a>
-                </li>
+                <!-- Seus itens de navegação -->
+                <li><a href="/" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>Início</a></li>
 
-                <li>
-                    <a href="/recentes" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Recentes
-                    </a>
-                </li>
+                <li><a href="/recentes" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>Recentes</a></li>
 
-                <li>
-                    <a href="/top-view" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                        </svg>
-                        Mais Acessados
-                    </a>
-                </li>
+                <li><a href="/top-view" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>Mais Acessados</a></li>
 
-                <li>
-                    <a href="/top-rated" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                        </svg>
-                        Mais Curtidos
-                    </a>
-                </li>
+                <li><a href="/top-rated" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                    </svg>Mais Curtidos</a></li>
 
-                <li>
-                    <a href="/tags" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586L20 10l-7 7-6.586-6.586C6.024 10.024 6 9.512 6 9V4c0-.552.448-1 1-1z"/>
-                        </svg>
-                        Tags
-                    </a>
-                </li>
+                <li><a href="/tags" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586L20 10l-7 7-6.586-6.586C6.024 10.024 6 9.512 6 9V4c0-.552.448-1 1-1z"/>
+                    </svg>Tags</a></li>
 
-                <li>
-                    <a href="/modelos" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        Modelos
-                    </a>
-                </li>
+                <li><a href="/modelos" class="nav-link flex items-center hover:text-red-600 hover:bg-gray-800 px-3 py-2 rounded-lg font-medium transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>Modelos</a></li>
             </ul>
         </div>
     </div>
+</nav>
+
+<!-- Navbar Mobile -->
+<nav class="flex md:hidden justify-between items-center p-4 bg-gray-800 z-50">
+  
+  <!-- Botão Hamburguer Melhorado -->
+  <button 
+    id="menu-btn" 
+    class="text-3xl focus:outline-none p-2 -mr-2 active:scale-95 transition-transform"
+    aria-label="Abrir menu"
+    aria-expanded="false"
+    aria-controls="mobile-menu"
+  >
+    ☰
+  </button>
+</nav>
+
+<!-- Menu Mobile Fullscreen -->
+<nav id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-95 hidden flex-col justify-center items-center z-50 opacity-0 scale-95 transition-all duration-300 ease-in-out">
+  <button id="close-btn" class="absolute top-6 left-6 text-4xl hover:text-red-500 transition">
+    ✕
+  </button>
+
+  <ul class="space-y-8 text-2xl font-medium text-white">
+    <li><a href="/" class="flex items-center gap-3 hover:text-red-500">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M3 9.75L12 3l9 6.75v10.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 20.25V9.75z"/>
+      </svg> Início
+    </a></li>
+
+    <li><a href="/recentes" class="flex items-center gap-3 hover:text-red-500">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg> Vídeos Recentes
+    </a></li>
+
+    <li><a href="/top-rated" class="flex items-center gap-3 hover:text-red-500">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M3 17l6-6 4 4 8-8"/>
+      </svg> Mais Curtidos
+    </a></li>
+
+    <li><a href="/top-view" class="flex items-center gap-3 hover:text-red-500">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        <path d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"/>
+      </svg> Mais Vistos
+    </a></li>
+
+    <li><a href="/tags" class="flex items-center gap-3 hover:text-red-500">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M7 7h.01M3 7a4 4 0 014-4h3.586a1 1 0 01.707.293l7.414 7.414a1 1 0 010 1.414l-6.586 6.586a1 1 0 01-1.414 0L3.293 10.707A1 1 0 013 10V7z"/>
+      </svg> Categorias
+    </a></li>
+
+    <li><a href="/modelos" class="flex items-center gap-3 hover:text-red-500">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M5.121 17.804A13.937 13.937 0 0112 15c2.364 0 4.578.613 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg> Modelos
+    </a></li>
+
+    <li><a href="/upload" class="flex items-center gap-3 hover:text-red-500">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M12 16V4m0 0l-4 4m4-4l4 4M20 20H4"/>
+      </svg> Upload
+    </a></li>
+
+    <li><a href="{{ url_for('auth.login') }}" class="hover:underline text-red-400">Login</a></li>
+    <li><a href="{{ url_for('auth.cadastro') }}" class="bg-red-600 hover:bg-red-700 px-4 py-1 rounded font-bold">Inscrever-se</a></li>
+  </ul>
 </nav>
 
 <main class="container mx-auto px-4 py-6">
     {% block content %}
     {% endblock %}
 </main>
-
-<!-- 🔥 JS de Notificações -->
-{% if current_user.is_authenticated %}
+  {% block scripts %}{% endblock %}
 <script>
-    const notifButton = document.getElementById('notif-button');
-    const notifDropdown = document.getElementById('notif-dropdown');
-    const notifCount = document.getElementById('notif-count');
-    const notifList = document.getElementById('notif-list');
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const notifButton = document.getElementById('notif-button');
+const notifDropdown = document.getElementById('notif-dropdown');
+const notifCount = document.getElementById('notif-count');
+const notifList = document.getElementById('notif-list');
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    notifButton.addEventListener('click', () => {
-        notifDropdown.classList.toggle('hidden');
-    });
+if (notifButton && notifDropdown && notifCount && notifList) {
+  notifButton.addEventListener('click', () => {
+    notifDropdown.classList.toggle('hidden');
+  });
 
-    document.addEventListener('click', function(event) {
-        const notifButton = document.getElementById('notif-button');
-        const notifDropdown = document.getElementById('notif-dropdown');
-            
-        if (!notifButton.contains(event.target) && !notifDropdown.contains(event.target)) {
-            notifDropdown.classList.add('hidden');
-        }
-    });
-
-    async function fetchNotifs() {
-        const res = await fetch('/notifications/list');
-        const data = await res.json();
-
-        notifList.innerHTML = '';
-        let unread = 0;
-
-        data.forEach(n => {
-            const item = document.createElement('div');
-            item.className = 'p-2 rounded hover:bg-gray-700 cursor-pointer flex justify-between';
-
-            item.innerHTML = `
-                <div>
-                    <p class="text-sm ${n.is_read ? 'text-gray-400' : 'text-white'}">${n.message}</p>
-                    <p class="text-xs text-gray-500">${n.created_at}</p>
-                </div>
-                ${n.url ? `<a href="${n.url}" class="text-red-400 text-xs">Ver</a>` : ''}
-            `;
-
-            item.addEventListener('click', () => {
-                fetch(`/notifications/read/${n.id}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken
-                    }
-                });
-                if (n.url) window.location.href = n.url;
-            });
-
-            notifList.appendChild(item);
-
-            if (!n.is_read) unread += 1;
-        });
-
-        if (unread > 0) {
-            notifCount.classList.remove('hidden');
-            notifCount.textContent = unread;
-        } else {
-            notifCount.classList.add('hidden');
-        }
+  document.addEventListener('click', function(event) {
+    if (!notifButton.contains(event.target) && !notifDropdown.contains(event.target)) {
+      notifDropdown.classList.add('hidden');
     }
+  });
 
-    fetchNotifs();
-    setInterval(fetchNotifs, 60000);
-</script>
+  async function fetchNotifs() {
+    const res = await fetch('/notifications/list');
+    const data = await res.json();
 
-{% endif %}
+    notifList.innerHTML = '';
+    let unread = 0;
+
+    data.forEach(n => {
+      const item = document.createElement('div');
+      item.className = 'p-2 rounded hover:bg-gray-700 cursor-pointer flex justify-between';
+
+      item.innerHTML = `
+        <div>
+          <p class="text-sm ${n.is_read ? 'text-gray-400' : 'text-white'}">${n.message}</p>
+          <p class="text-xs text-gray-500">${n.created_at}</p>
+        </div>
+        ${n.url ? `<a href="${n.url}" class="text-red-400 text-xs">Ver</a>` : ''}
+      `;
+
+      item.addEventListener('click', () => {
+        fetch(`/notifications/read/${n.id}`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        if (n.url) window.location.href = n.url;
+      });
+
+      notifList.appendChild(item);
+
+      if (!n.is_read) unread += 1;
+    });
+
+    if (unread > 0) {
+      notifCount.classList.remove('hidden');
+      notifCount.textContent = unread;
+    } else {
+      notifCount.classList.add('hidden');
+    }
+  }
+
+  fetchNotifs();
+  setInterval(fetchNotifs, 60000);
+}
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const menuBtn = document.getElementById('menu-btn');
+    const closeBtn = document.getElementById('close-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    if (!menuBtn || !closeBtn || !mobileMenu) return;
+
+    const openMenu = (e) => {
+      e.preventDefault();
+      mobileMenu.classList.remove('hidden', 'opacity-0', 'scale-95');
+      mobileMenu.classList.add('flex', 'opacity-100', 'scale-100');
+      menuBtn.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('overflow-hidden');
+    };
+
+    const closeMenu = (e) => {
+      e.preventDefault();
+      mobileMenu.classList.add('opacity-0', 'scale-95');
+      mobileMenu.classList.remove('opacity-100', 'scale-100');
+      menuBtn.setAttribute('aria-expanded', 'false');
+
+      setTimeout(() => {
+        mobileMenu.classList.remove('flex');
+        mobileMenu.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }, 200);
+    };
+
+    ['click', 'touchstart'].forEach(evt => {
+      menuBtn.addEventListener(evt, openMenu);
+      closeBtn.addEventListener(evt, closeMenu);
+    });
+
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      ['click', 'touchstart'].forEach(evt => {
+        link.addEventListener(evt, closeMenu);
+      });
+    });
+  });
+  </script>
 
 </body>
 </html>
