@@ -120,7 +120,7 @@
 </nav>
 
 <!-- Navbar Mobile -->
-<nav class="flex md:hidden justify-between items-center p-4 bg-gray-800 z-50">
+<nav class="flex md:hidden justify-between items-center p-4 bg-black-800 z-50">
   
   <!-- Botão Hamburguer Melhorado -->
   <button 
@@ -132,7 +132,41 @@
   >
     ☰
   </button>
+
+ <!-- Botão Lupa -->
+<button
+  id="search-btn"
+  class="text-2xl focus:outline-none p-2 active:scale-95 transition-transform text-gray-300 hover:text-red-500"
+  aria-label="Buscar"
+>
+  <svg id="search-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+       viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+  </svg>
+
+  <svg id="close-search-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none"
+       viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+  </svg>
+</button>
 </nav>
+
+<div id="mobile-search-bar-container" class="md:hidden overflow-hidden transition-all duration-300 ease-in-out h-0 opacity-0">
+    <div class="p-4 bg-black-800"> <div class="flex-1 max-w-2xl mx-auto"> <form action="{{ url_for('main.search') }}" method="GET" class="relative">
+                <input type="text" name="q" placeholder="Buscar"
+                       class="w-full bg-gray-800 text-white px-4 py-2.5 rounded-lg pr-12 placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-red-600 transition-all">
+                <button type="submit"
+                        class="absolute right-0 top-0 h-full px-4 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label="Buscar">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Menu Mobile Fullscreen -->
 <nav id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-95 hidden flex-col justify-center items-center z-50 opacity-0 scale-95 transition-all duration-300 ease-in-out">
@@ -199,111 +233,171 @@
 </main>
   {% block scripts %}{% endblock %}
 <script>
-const notifButton = document.getElementById('notif-button');
-const notifDropdown = document.getElementById('notif-dropdown');
-const notifCount = document.getElementById('notif-count');
-const notifList = document.getElementById('notif-list');
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // --- Lógica de Notificações ---
+    const notifButton = document.getElementById('notif-button');
+    const notifDropdown = document.getElementById('notif-dropdown');
+    const notifCount = document.getElementById('notif-count');
+    const notifList = document.getElementById('notif-list');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-if (notifButton && notifDropdown && notifCount && notifList) {
-  notifButton.addEventListener('click', () => {
-    notifDropdown.classList.toggle('hidden');
-  });
-
-  document.addEventListener('click', function(event) {
-    if (!notifButton.contains(event.target) && !notifDropdown.contains(event.target)) {
-      notifDropdown.classList.add('hidden');
-    }
-  });
-
-  async function fetchNotifs() {
-    const res = await fetch('/notifications/list');
-    const data = await res.json();
-
-    notifList.innerHTML = '';
-    let unread = 0;
-
-    data.forEach(n => {
-      const item = document.createElement('div');
-      item.className = 'p-2 rounded hover:bg-gray-700 cursor-pointer flex justify-between';
-
-      item.innerHTML = `
-        <div>
-          <p class="text-sm ${n.is_read ? 'text-gray-400' : 'text-white'}">${n.message}</p>
-          <p class="text-xs text-gray-500">${n.created_at}</p>
-        </div>
-        ${n.url ? `<a href="${n.url}" class="text-red-400 text-xs">Ver</a>` : ''}
-      `;
-
-      item.addEventListener('click', () => {
-        fetch(`/notifications/read/${n.id}`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken
-          }
+    if (notifButton && notifDropdown && notifCount && notifList) {
+        notifButton.addEventListener('click', () => {
+            notifDropdown.classList.toggle('hidden');
         });
-        if (n.url) window.location.href = n.url;
-      });
 
-      notifList.appendChild(item);
+        document.addEventListener('click', function(event) {
+            if (!notifButton.contains(event.target) && !notifDropdown.contains(event.target)) {
+                notifDropdown.classList.add('hidden');
+            }
+        });
 
-      if (!n.is_read) unread += 1;
-    });
+        async function fetchNotifs() {
+            const res = await fetch('/notifications/list');
+            const data = await res.json();
 
-    if (unread > 0) {
-      notifCount.classList.remove('hidden');
-      notifCount.textContent = unread;
-    } else {
-      notifCount.classList.add('hidden');
+            notifList.innerHTML = '';
+            let unread = 0;
+
+            data.forEach(n => {
+                const item = document.createElement('div');
+                item.className = 'p-2 rounded hover:bg-gray-700 cursor-pointer flex justify-between';
+
+                item.innerHTML = `
+                    <div>
+                        <p class="text-sm ${n.is_read ? 'text-gray-400' : 'text-white'}">${n.message}</p>
+                        <p class="text-xs text-gray-500">${n.created_at}</p>
+                    </div>
+                    ${n.url ? `<a href="${n.url}" class="text-red-400 text-xs">Ver</a>` : ''}
+                `;
+
+                item.addEventListener('click', () => {
+                    fetch(`/notifications/read/${n.id}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+                    if (n.url) window.location.href = n.url;
+                });
+
+                notifList.appendChild(item);
+
+                if (!n.is_read) unread += 1;
+            });
+
+            if (unread > 0) {
+                notifCount.classList.remove('hidden');
+                notifCount.textContent = unread;
+            } else {
+                notifCount.classList.add('hidden');
+            }
+        }
+
+        fetchNotifs();
+        setInterval(fetchNotifs, 60000);
     }
-  }
 
-  fetchNotifs();
-  setInterval(fetchNotifs, 60000);
-}
+    // --- Lógica do Menu Mobile e Nova Lógica de Busca ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Lógica do Menu Mobile (existente) ---
+        const menuBtn = document.getElementById('menu-btn');
+        const closeBtn = document.getElementById('close-btn'); // Verifique se este ID existe no seu HTML
+        const mobileMenu = document.getElementById('mobile-menu');
 
+        if (menuBtn && mobileMenu) {
+            const openMenu = (e) => {
+                e.preventDefault();
+                mobileMenu.classList.remove('hidden', 'opacity-0', 'scale-95');
+                mobileMenu.classList.add('flex', 'opacity-100', 'scale-100');
+                menuBtn.setAttribute('aria-expanded', 'true');
+                document.body.classList.add('overflow-hidden');
+                // Se a barra de busca estiver aberta, feche-a ao abrir o menu
+                if (isSearchVisible) {
+                    mobileSearchBarContainer.classList.remove('h-auto', 'opacity-100');
+                    mobileSearchBarContainer.classList.add('h-0', 'opacity-0');
+                    isSearchVisible = false;
+                    // Também alterna o ícone da lupa de volta para a lupa
+                    searchIcon.classList.remove('hidden');
+                    closeSearchIcon.classList.add('hidden');
+                }
+            };
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const menuBtn = document.getElementById('menu-btn');
-    const closeBtn = document.getElementById('close-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
+            const closeMenu = (e) => {
+                mobileMenu.classList.add('opacity-0', 'scale-95');
+                mobileMenu.classList.remove('opacity-100', 'scale-100');
+                menuBtn.setAttribute('aria-expanded', 'false');
 
-    if (!menuBtn || !closeBtn || !mobileMenu) return;
+                setTimeout(() => {
+                    mobileMenu.classList.remove('flex');
+                    mobileMenu.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }, 200); // Ajuste este tempo se a transição CSS for diferente
+            };
 
-    const openMenu = (e) => {
-      e.preventDefault();
-      mobileMenu.classList.remove('hidden', 'opacity-0', 'scale-95');
-      mobileMenu.classList.add('flex', 'opacity-100', 'scale-100');
-      menuBtn.setAttribute('aria-expanded', 'true');
-      document.body.classList.add('overflow-hidden');
-    };
+            ['click', 'touchstart'].forEach(evt => {
+                menuBtn.addEventListener(evt, openMenu);
+                if (closeBtn) {
+                    closeBtn.addEventListener(evt, closeMenu);
+                }
+            });
 
-    const closeMenu = (e) => {
-      mobileMenu.classList.add('opacity-0', 'scale-95');
-      mobileMenu.classList.remove('opacity-100', 'scale-100');
-      menuBtn.setAttribute('aria-expanded', 'false');
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                ['click', 'touchstart'].forEach(evt => {
+                    link.addEventListener(evt, closeMenu);
+                });
+            });
+        }
 
-      setTimeout(() => {
-        mobileMenu.classList.remove('flex');
-        mobileMenu.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-      }, 200);
-    };
+        // --- Lógica da Busca Mobile (Nova) ---
+        const searchBtn = document.getElementById('search-btn');
+        const mobileSearchBarContainer = document.getElementById('mobile-search-bar-container');
+        const searchIcon = document.getElementById('search-icon'); // Novo
+        const closeSearchIcon = document.getElementById('close-search-icon'); // Novo
+        let isSearchVisible = false;
 
-    ['click', 'touchstart'].forEach(evt => {
-      menuBtn.addEventListener(evt, openMenu);
-      closeBtn.addEventListener(evt, closeMenu);
+        if (searchBtn && mobileSearchBarContainer && searchIcon && closeSearchIcon) { // Adicionado verificação para os ícones
+            searchBtn.addEventListener('click', function() {
+                if (isSearchVisible) {
+                    // Oculta a barra de busca
+                    mobileSearchBarContainer.classList.remove('h-auto', 'opacity-100');
+                    mobileSearchBarContainer.classList.add('h-0', 'opacity-0');
+                    isSearchVisible = false;
+                    // Mostra o ícone de lupa e oculta o ícone de X
+                    searchIcon.classList.remove('hidden');
+                    closeSearchIcon.classList.add('hidden');
+                } else {
+                    // Exibe a barra de busca
+                    mobileSearchBarContainer.classList.remove('h-0', 'opacity-0');
+                    mobileSearchBarContainer.classList.add('h-auto', 'opacity-100');
+                    isSearchVisible = true;
+                    // Mostra o ícone de X e oculta o ícone de lupa
+                    searchIcon.classList.add('hidden');
+                    closeSearchIcon.classList.remove('hidden');
+
+                    // Se o menu mobile estiver aberto, feche-o ao abrir a busca
+                    if (mobileMenu && mobileMenu.classList.contains('flex')) {
+                        closeMenu();
+                    }
+                    const searchInput = mobileSearchBarContainer.querySelector('input[name="q"]');
+                    if (searchInput) {
+                        searchInput.focus();
+                    }
+                }
+            });
+
+            // Opcional: Fecha a barra de busca ao clicar fora dela
+            document.addEventListener('click', function(event) {
+                if (isSearchVisible && !mobileSearchBarContainer.contains(event.target) && !searchBtn.contains(event.target)) {
+                    mobileSearchBarContainer.classList.remove('h-auto', 'opacity-100');
+                    mobileSearchBarContainer.classList.add('h-0', 'opacity-0');
+                    isSearchVisible = false;
+                    // Mostra o ícone de lupa e oculta o ícone de X
+                    searchIcon.classList.remove('hidden');
+                    closeSearchIcon.classList.add('hidden');
+                }
+            });
+        }
     });
-
-    mobileMenu.querySelectorAll('a').forEach(link => {
-      ['click', 'touchstart'].forEach(evt => {
-      mobileMenu.classList.remove('flex');
-      mobileMenu.classList.add('hidden');
-      document.body.classList.remove('overflow-hidden');
-      });
-    });
-  });
-  </script>
-
+</script>
 </body>
 </html>
