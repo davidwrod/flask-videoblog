@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, abort
 from flask_login import login_required, current_user
 from app.models import Video, db, Model, Tag, User, Notification
 from sqlalchemy import func
@@ -126,3 +126,18 @@ def remove_model(slug):
 
     return jsonify({'success': True, 'message': 'Modelo removido com sucesso'})
 
+@video_bp.route('/video/<slug:slug>/models/<int:model_id>/remove', methods=['POST'])
+@login_required
+def dissoaciate_model(slug: str, model_id: int):
+    video = Video.query.filter_by(slug=slug).first_or_404()
+    model = Model.query.get_or_404(model_id)
+
+    # Permissão: admin, moderador ou dono do vídeo
+    if current_user.role not in ['admin', 'mod'] and current_user.id != video.user_id:
+        return jsonify({'error': 'Sem permissão'}), 403
+
+    if model in video.models:
+        video.models.remove(model)
+        db.session.commit()
+
+    return jsonify({'removed': True})

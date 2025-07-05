@@ -133,6 +133,22 @@
 <!-- Modal Sugerir Modelo -->
 <div id="suggestModelModal" data-video-slug="{{ video.slug }}" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
   <div class="bg-gray-800 p-6 rounded-xl shadow-xl max-w-sm w-full text-white">
+    <h3 class="text-lg font-semibold mb-2">Modelos associadas</h3>
+
+<div id="associatedModels" class="flex flex-wrap gap-2 mb-6">
+  {% for modelo in video.models %}
+    <span class="group bg-gray-700 px-3 py-1 rounded-lg flex items-center gap-2 text-sm">
+      {{ modelo.name }}
+      <button
+        class="remove-model hidden group-hover:inline text-red-400"
+        data-model="{{ modelo.id }}"
+        aria-label="Remover {{ modelo.name }}">
+        ×
+      </button>
+    </span>
+  {% endfor %}
+</div>
+
     <h3 class="text-lg font-semibold mb-4">Sugerir nome da modelo</h3>
 
     {% if current_user.is_authenticated %}
@@ -168,7 +184,38 @@
 <script type="module">
   const input = document.getElementById("modelInput");
   const list = document.getElementById("autocompleteList");
+  /* ==== Desassociar modelo ==== */
+const modal     = document.getElementById('suggestModelModal');
+const modelsBox = document.getElementById('associatedModels');
+const slug      = modal.dataset.videoSlug;
+const csrf      = document
+                   .querySelector('meta[name="csrf-token"]')
+                   ?.getAttribute('content');
 
+modelsBox.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.remove-model');
+  if (!btn) return;                         // clicou fora de um "×"
+
+  const modelId = btn.dataset.model;
+
+  try {
+    const res = await fetch(
+      `/video/${slug}/models/${modelId}/remove`, {
+        method  : 'POST',
+        headers : { 'X-CSRFToken': csrf || '' }
+      }
+    );
+    const json = await res.json();
+    if (json.removed) {
+      // some a tag visualmente
+      btn.parentElement.remove();
+      // (opcional) mostrar toast de sucesso
+    }
+  } catch (err) {
+    console.error('Falha ao remover modelo:', err);
+    // (opcional) toast de erro
+  }
+});
   input.addEventListener("input", async () => {
     const query = input.value.trim();
     list.innerHTML = "";
